@@ -1,0 +1,337 @@
+/* NepaliGarage Core — Frontend Styles v0.1.0 */
+
+/* --- Custom Properties --- */
+:root {
+    --ng-red:        #C1121F;
+    --ng-blue:       #1B2A6B;
+    --ng-white:      #FFFFFF;
+    --ng-blue-light: #2563EB;
+    --ng-gray:       #6B7280;
+    --ng-green:      #16A34A;
+    --ng-amber:      #D97706;
+    --ng-red-badge:  #DC2626;
+    --ng-bg:         #F8F9FA;
+    --ng-border:     #E5E7EB;
+    --ng-text:       #111827;
+    --ng-radius:     8px;
+    --ng-radius-sm:  4px;
+    --ng-shadow:     0 2px 8px rgba(0,0,0,.08);
+    --ng-shadow-lg:  0 4px 24px rgba(0,0,0,.12);
+    --ng-transition: 0.2s ease;
+}
+
+/* --- Outer wrapper --- */
+.ng-comparison-wrap {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: .95rem;
+    color: var(--ng-text);
+    background: var(--ng-bg);
+    border-radius: var(--ng-radius);
+    overflow: hidden;
+    box-shadow: var(--ng-shadow-lg);
+    margin-block: 2rem;
+}
+
+/* --- Comparison header --- */
+.ng-comparison-header {
+    display: grid;
+    grid-template-columns: 160px 1fr 1fr;
+    background: linear-gradient(135deg, var(--ng-blue) 0%, var(--ng-blue-light) 100%);
+    color: var(--ng-white);
+    padding: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+}
+
+.ng-comparison-header__col--a,
+.ng-comparison-header__col--b { padding-inline: 1rem; }
+
+.ng-comparison-header__col--a { border-right: 1px solid rgba(255,255,255,.2); }
+
+.ng-car-name {
+    margin: 0 0 .5rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--ng-white);
+}
+
+.ng-hero-specs { display: flex; gap: .75rem; flex-wrap: wrap; }
+
+.ng-hero-spec { display: flex; flex-direction: column; }
+
+.ng-hero-spec__label {
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    opacity: .75;
+}
+
+.ng-hero-spec__value { font-size: .95rem; font-weight: 600; }
+
+/* --- Tab navigation --- */
+.ng-tab-nav {
+    display: flex;
+    overflow-x: auto;
+    background: var(--ng-white);
+    border-bottom: 2px solid var(--ng-border);
+    scrollbar-width: none;
+}
+.ng-tab-nav::-webkit-scrollbar { display: none; }
+
+.ng-tab-btn {
+    flex-shrink: 0;
+    padding: .65rem 1.1rem;
+    font-size: .85rem;
+    font-weight: 500;
+    color: var(--ng-gray);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: color var(--ng-transition), border-color var(--ng-transition);
+    white-space: nowrap;
+}
+.ng-tab-btn:hover { color: var(--ng-blue); }
+.ng-tab-btn--active { color: var(--ng-blue); border-bottom-color: var(--ng-red); font-weight: 700; }
+
+/* --- Tab panels --- */
+.ng-tab-panel { display: none; }
+.ng-tab-panel--active { display: block; }
+
+/* --- Comparison table --- */
+.ng-comparison-table { width: 100%; border-collapse: collapse; background: var(--ng-white); }
+
+.ng-comparison-table thead th {
+    background: var(--ng-blue);
+    color: var(--ng-white);
+    font-size: .8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    padding: .65rem .9rem;
+    text-align: left;
+}
+
+.ng-table-col-label { width: 38%; }
+.ng-table-col-a, .ng-table-col-b { width: 31%; }
+
+.ng-spec-row {
+    border-bottom: 1px solid var(--ng-border);
+    transition: background var(--ng-transition);
+}
+.ng-spec-row:last-child { border-bottom: none; }
+.ng-spec-row:hover { background: #F0F4FF; }
+
+.ng-spec-label {
+    padding: .7rem .9rem;
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+.ng-spec-cell { padding: .7rem .9rem; vertical-align: middle; font-size: .9rem; }
+
+.ng-cell-empty { color: var(--ng-gray); font-style: italic; font-size: .85rem; }
+
+.ng-unit { font-size: .8em; color: var(--ng-gray); }
+
+/* --- Confidence badges --- */
+.ng-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: .15em .45em;
+    border-radius: var(--ng-radius-sm);
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+    vertical-align: middle;
+    cursor: default;
+}
+
+.ng-badge--official    { background: #DCFCE7; color: var(--ng-green);     border: 1px solid #BBF7D0; }
+.ng-badge--estimated   { background: #FEF3C7; color: var(--ng-amber);     border: 1px solid #FDE68A; }
+.ng-badge--unverified  { background: #FEE2E2; color: var(--ng-red-badge); border: 1px solid #FECACA; }
+
+/* --- Nepal context section --- */
+.ng-nepal-context {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FEF3C7 100%);
+    border-top: 3px solid var(--ng-amber);
+    padding: 1rem;
+}
+
+.ng-nepal-context__title {
+    margin: 0 0 .75rem;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ng-blue);
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
+.ng-nepal-flag { font-size: 1.2em; }
+
+.ng-comparison-table--nepal thead th { background: #92400E; }
+
+/* --- TL;DR verdict box --- */
+.ng-tldr-box {
+    background: linear-gradient(135deg, var(--ng-blue) 0%, #0F1E55 100%);
+    color: var(--ng-white);
+    padding: 1.5rem;
+    border-top: 3px solid var(--ng-red);
+}
+
+.ng-tldr-box__title { margin: 0 0 .75rem; font-size: 1.1rem; font-weight: 700; color: var(--ng-white); }
+
+.ng-tldr-box__summary { margin: 0 0 1rem; line-height: 1.6; opacity: .9; }
+
+.ng-tldr-box__verdicts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.ng-tldr-verdict {
+    background: rgba(255,255,255,.1);
+    border-radius: var(--ng-radius);
+    padding: .85rem 1rem;
+}
+
+.ng-tldr-verdict strong {
+    display: block;
+    font-size: .85rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: .35rem;
+    opacity: .75;
+}
+.ng-tldr-verdict p { margin: 0; line-height: 1.5; }
+
+.ng-tldr-box__disclaimer {
+    margin: 0;
+    font-size: .75rem;
+    opacity: .6;
+    border-top: 1px solid rgba(255,255,255,.15);
+    padding-top: .75rem;
+}
+
+/* --- Price estimator --- */
+.ng-price-estimator {
+    background: var(--ng-white);
+    border-radius: var(--ng-radius);
+    box-shadow: var(--ng-shadow);
+    padding: 1.75rem;
+    margin-block: 2rem;
+    max-width: 560px;
+}
+
+.ng-estimator-title { margin: 0 0 .4rem; font-size: 1.15rem; font-weight: 700; color: var(--ng-blue); }
+
+.ng-estimator-desc { margin: 0 0 1.25rem; color: var(--ng-gray); font-size: .9rem; }
+
+.ng-estimator-form { display: flex; flex-direction: column; gap: .9rem; }
+
+.ng-form-row { display: flex; flex-direction: column; gap: .3rem; }
+
+.ng-form-row label { font-size: .85rem; font-weight: 600; }
+
+.ng-form-row input,
+.ng-form-row select {
+    padding: .55rem .8rem;
+    border: 1px solid var(--ng-border);
+    border-radius: var(--ng-radius-sm);
+    font-size: .9rem;
+    color: var(--ng-text);
+    background: var(--ng-white);
+    transition: border-color var(--ng-transition);
+    width: 100%;
+    box-sizing: border-box;
+}
+.ng-form-row input:focus,
+.ng-form-row select:focus {
+    outline: none;
+    border-color: var(--ng-blue-light);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+}
+
+.ng-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .65rem 1.4rem;
+    border: none;
+    border-radius: var(--ng-radius-sm);
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background var(--ng-transition), transform var(--ng-transition);
+}
+.ng-btn--primary { background: var(--ng-red); color: var(--ng-white); align-self: flex-start; }
+.ng-btn--primary:hover { background: #A00E18; transform: translateY(-1px); }
+
+.ng-estimator-result {
+    margin-top: 1.25rem;
+    border-radius: var(--ng-radius);
+    overflow: hidden;
+    border: 1px solid var(--ng-border);
+}
+
+.ng-result-header {
+    background: var(--ng-blue);
+    color: var(--ng-white);
+    padding: .75rem 1rem;
+    font-weight: 700;
+    font-size: .9rem;
+}
+
+.ng-result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .55rem 1rem;
+    border-bottom: 1px solid var(--ng-border);
+    font-size: .9rem;
+}
+.ng-result-row:last-of-type { border-bottom: none; }
+.ng-result-row__label { color: var(--ng-gray); }
+.ng-result-row__value { font-weight: 500; }
+
+.ng-result-total {
+    background: linear-gradient(135deg, var(--ng-blue) 0%, var(--ng-blue-light) 100%);
+    color: var(--ng-white);
+    padding: .85rem 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 700;
+}
+.ng-result-total__label { font-size: .9rem; opacity: .85; }
+.ng-result-total__value { font-size: 1.15rem; }
+
+/* --- Error / utility --- */
+.ng-error {
+    padding: .75rem 1rem;
+    background: #FEE2E2;
+    color: var(--ng-red-badge);
+    border: 1px solid #FECACA;
+    border-radius: var(--ng-radius-sm);
+    font-size: .9rem;
+}
+
+/* --- Responsive (stack under 768px) --- */
+@media (max-width: 767px) {
+    .ng-comparison-header { grid-template-columns: 1fr; position: static; }
+    .ng-comparison-header__col--label { display: none; }
+    .ng-comparison-header__col--a { border-right: none; border-bottom: 1px solid rgba(255,255,255,.2); padding-bottom: 1rem; }
+    .ng-comparison-table thead th,
+    .ng-spec-label,
+    .ng-spec-cell { padding: .55rem .6rem; font-size: .8rem; }
+    .ng-table-col-label { width: 35%; }
+    .ng-tldr-box__verdicts { grid-template-columns: 1fr; }
+    .ng-hero-specs { gap: .5rem; }
+    .ng-price-estimator { padding: 1.25rem; }
+}
