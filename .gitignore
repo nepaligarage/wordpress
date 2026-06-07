@@ -1,0 +1,36 @@
+# Credentials — never commit to public remote
+connection.md
+.env
+.env.*
+*.env
+
+# API keys
+api-keys.json
+secrets.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# Node
+node_modules/
+.npm/
+
+# Logs
+*.log
+logs/
+
+# Automation output cache
+automation/cache/
+automation/output/drafts/
+
+# Claude Flow internal
+.claude-flow/
