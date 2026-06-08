@@ -1,0 +1,171 @@
+/* NepaliGarage — Team Dashboard */
+
+/* ── Auth gate ───────────────────────────────────────────────────────────── */
+.ng-team-gate {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--ng-gray-50, #f8fafc);
+    padding: 24px;
+}
+.ng-team-gate__card {
+    background: var(--ng-white, #fff);
+    border: 1px solid var(--ng-gray-100, #e2e8f0);
+    border-radius: var(--ng-radius-lg, 12px);
+    padding: 40px 48px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+}
+.ng-team-gate__card h1 { font-size: 1.4rem; margin: 16px 0 8px; color: var(--ng-navy, #1B2A6B); }
+.ng-team-gate__card p  { color: var(--ng-gray-500, #64748b); margin-bottom: 24px; font-size: .9rem; }
+.ng-team-gate__form    { display: flex; flex-direction: column; gap: 16px; }
+.ng-team-gate__error   { color: #dc2626; font-size: .85rem; margin: 0; }
+.ng-field { display: flex; flex-direction: column; gap: 6px; }
+.ng-field label { font-size: .8rem; font-weight: 600; color: var(--ng-gray-600, #475569); text-transform: uppercase; letter-spacing: .04em; }
+.ng-field input, .ng-field select, .ng-field textarea {
+    border: 1px solid var(--ng-gray-200, #e2e8f0);
+    border-radius: var(--ng-radius, 8px);
+    padding: 9px 12px;
+    font-size: .9rem;
+    background: var(--ng-white, #fff);
+    color: var(--ng-text, #0f172a);
+    width: 100%;
+    transition: border-color .15s;
+}
+.ng-field input:focus, .ng-field select:focus, .ng-field textarea:focus {
+    outline: none;
+    border-color: var(--ng-blue, #2563EB);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.ng-btn--full { width: 100%; justify-content: center; }
+
+/* ── Dashboard layout ────────────────────────────────────────────────────── */
+.ng-team {
+    display: flex;
+    min-height: 100vh;
+    background: var(--ng-gray-50, #f8fafc);
+}
+
+/* ── Sidebar ─────────────────────────────────────────────────────────────── */
+.ng-team__sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    background: var(--ng-navy, #1B2A6B);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+.ng-team__brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 20px 24px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+    color: #fff;
+    font-weight: 700;
+    font-size: .95rem;
+}
+.ng-team__brand .ng-logo__mark {
+    background: #fff;
+    color: var(--ng-navy, #1B2A6B);
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-size: .8rem;
+    font-weight: 900;
+}
+.ng-team__nav { padding: 16px 0; flex: 1; }
+.ng-team__nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    color: rgba(255,255,255,.65);
+    font-size: .875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    border-left: 3px solid transparent;
+    text-decoration: none;
+}
+.ng-team__nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+.ng-team__nav-item:hover { background: rgba(255,255,255,.08); color: #fff; text-decoration: none; }
+.ng-team__nav-item.is-active { background: rgba(255,255,255,.12); color: #fff; border-left-color: #60a5fa; }
+.ng-team__sidebar-footer { padding: 20px; border-top: 1px solid rgba(255,255,255,.1); }
+.ng-team__user-label { display: block; color: rgba(255,255,255,.5); font-size: .75rem; margin-bottom: 10px; word-break: break-all; }
+
+/* ── Main content ────────────────────────────────────────────────────────── */
+.ng-team__main { flex: 1; padding: 32px 40px; overflow-y: auto; min-width: 0; }
+.ng-team__panel { display: none; }
+.ng-team__panel.is-active { display: block; }
+.ng-team__panel h1 { font-size: 1.6rem; font-weight: 800; color: var(--ng-navy, #1B2A6B); margin: 0 0 24px; }
+.ng-team__panel h2 { font-size: 1.1rem; font-weight: 700; color: var(--ng-navy, #1B2A6B); margin: 28px 0 12px; }
+.ng-team__panel-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.ng-team__panel-header h1 { margin: 0; }
+
+/* ── Stats ───────────────────────────────────────────────────────────────── */
+.ng-team-stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 32px; }
+.ng-team-stat {
+    background: #fff;
+    border: 1px solid var(--ng-gray-100, #e2e8f0);
+    border-radius: var(--ng-radius, 8px);
+    padding: 20px 28px;
+    min-width: 130px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05);
+}
+.ng-team-stat__val { display: block; font-size: 2rem; font-weight: 800; color: var(--ng-navy, #1B2A6B); font-family: monospace; }
+.ng-team-stat__lbl { font-size: .75rem; color: var(--ng-gray-500, #64748b); text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; display: block; }
+
+/* ── Forms ───────────────────────────────────────────────────────────────── */
+.ng-team-form {
+    background: #fff;
+    border: 1px solid var(--ng-gray-100, #e2e8f0);
+    border-radius: var(--ng-radius, 8px);
+    padding: 24px;
+    margin-bottom: 24px;
+}
+.ng-team-form h3 { font-size: 1rem; font-weight: 700; margin: 0 0 16px; color: var(--ng-navy, #1B2A6B); }
+.ng-team-form__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.ng-field--wide { grid-column: 1 / -1; }
+.ng-team-form__actions { display: flex; gap: 12px; margin-top: 20px; }
+.ng-team-select { border: 1px solid var(--ng-gray-200, #e2e8f0); border-radius: var(--ng-radius, 8px); padding: 7px 10px; font-size: .875rem; background: #fff; }
+
+/* ── Tables ──────────────────────────────────────────────────────────────── */
+.ng-team-table-wrap { background: #fff; border: 1px solid var(--ng-gray-100, #e2e8f0); border-radius: var(--ng-radius, 8px); overflow: hidden; }
+.ng-team-table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+.ng-team-table th { background: var(--ng-gray-50, #f8fafc); padding: 10px 16px; text-align: left; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ng-gray-500, #64748b); border-bottom: 1px solid var(--ng-gray-100, #e2e8f0); }
+.ng-team-table td { padding: 12px 16px; border-bottom: 1px solid var(--ng-gray-100, #e2e8f0); vertical-align: middle; color: var(--ng-text, #0f172a); }
+.ng-team-table tr:last-child td { border-bottom: none; }
+.ng-team-table tr:hover td { background: var(--ng-gray-50, #f8fafc); }
+.ng-team-logo { height: 28px; max-width: 60px; object-fit: contain; }
+.ng-team-actions { display: flex; gap: 8px; }
+.ng-loading { color: var(--ng-gray-400, #94a3b8); padding: 24px; text-align: center; font-size: .875rem; }
+.ng-team-loading { color: var(--ng-gray-400, #94a3b8); padding: 20px; text-align: center; font-size: .875rem; margin: 0; }
+.ng-team-empty { color: var(--ng-gray-400, #94a3b8); padding: 32px; text-align: center; font-size: .875rem; }
+.ng-team-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; text-transform: uppercase; }
+.ng-team-badge--new       { background: #FEF9C3; color: #854D0E; }
+.ng-team-badge--contacted { background: #DCFCE7; color: #166534; }
+.ng-team-badge--follow_up { background: #FEF3C7; color: #92400E; }
+.ng-team-badge--converted { background: #DBEAFE; color: #1E40AF; }
+.ng-team-badge--closed    { background: #F3F4F6; color: #6B7280; }
+
+/* ── Content tab ─────────────────────────────────────────────────────────── */
+.ng-team-content-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 28px; }
+.ng-team-howto { padding-left: 20px; line-height: 2; color: var(--ng-gray-700, #334155); }
+.ng-team-howto code { background: var(--ng-gray-100, #f1f5f9); padding: 2px 6px; border-radius: 4px; font-size: .875rem; }
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .ng-team { flex-direction: column; }
+    .ng-team__sidebar { width: 100%; height: auto; position: static; flex-direction: row; overflow-x: auto; padding: 12px 0; }
+    .ng-team__nav { display: flex; flex-direction: row; padding: 0 12px; }
+    .ng-team__nav-item { padding: 8px 12px; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+    .ng-team__nav-item.is-active { border-left: none; border-bottom-color: #60a5fa; }
+    .ng-team__brand, .ng-team__sidebar-footer { display: none; }
+    .ng-team__main { padding: 20px 16px; }
+}

@@ -1,0 +1,277 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   NepaliGarage — Vehicle Detail Page Styles
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* ── Vehicle Hero ─────────────────────────────────────────────────────────── */
+.ng-vehicle-hero {
+    background: linear-gradient(160deg, var(--ng-blue) 0%, var(--ng-blue-mid) 60%, #1a3a6b 100%);
+    color: var(--ng-white);
+    padding: 48px 0 56px;
+}
+
+.ng-vehicle-hero__breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .8rem;
+    opacity: .7;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+}
+.ng-vehicle-hero__breadcrumb a { color: var(--ng-white); text-decoration: none; }
+.ng-vehicle-hero__breadcrumb a:hover { text-decoration: underline; }
+.ng-vehicle-hero__breadcrumb span { color: rgba(255,255,255,.5); }
+
+.ng-vehicle-hero__content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+}
+
+.ng-vehicle-hero__brand-logo {
+    height: 36px;
+    width: auto;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    margin-bottom: 12px;
+    display: block;
+}
+
+.ng-vehicle-hero__badge {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.3);
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 12px;
+}
+
+.ng-vehicle-hero__title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    color: var(--ng-white);
+}
+
+.ng-vehicle-hero__pricing {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.ng-vehicle-hero__price-label {
+    font-size: .85rem;
+    opacity: .7;
+}
+.ng-vehicle-hero__price {
+    font-size: 1.8rem;
+    font-weight: 800;
+    font-family: var(--ng-font-mono);
+    color: var(--ng-white);
+}
+
+.ng-vehicle-hero__desc {
+    font-size: .95rem;
+    opacity: .85;
+    line-height: 1.6;
+    margin-bottom: 28px;
+    max-width: 480px;
+}
+
+.ng-vehicle-hero__actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.ng-vehicle-hero__image-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ng-vehicle-hero__image {
+    max-width: 100%;
+    height: auto;
+    max-height: 280px;
+    object-fit: contain;
+    filter: drop-shadow(0 8px 32px rgba(0,0,0,.35));
+}
+
+.ng-vehicle-hero__image-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    opacity: .35;
+    color: var(--ng-white);
+    font-size: .85rem;
+}
+
+/* ── Variant Tabs ─────────────────────────────────────────────────────────── */
+.ng-vehicle-variants {
+    background: var(--ng-white);
+    border-bottom: 1px solid var(--ng-gray-100);
+    padding: 24px 0;
+    position: sticky;
+    top: 64px;
+    z-index: 40;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.ng-vehicle-section__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--ng-text);
+    margin-bottom: 16px;
+}
+
+.ng-variant-tabs {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.ng-variant-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    padding: 10px 16px;
+    border: 1.5px solid var(--ng-gray-200);
+    border-radius: var(--ng-radius);
+    background: var(--ng-white);
+    cursor: pointer;
+    transition: border-color var(--ng-transition), background var(--ng-transition);
+    min-width: 160px;
+    text-align: left;
+}
+.ng-variant-tab:hover { border-color: var(--ng-blue); background: #F8FAFF; }
+.ng-variant-tab.is-active { border-color: var(--ng-blue); background: #EEF2FF; }
+
+.ng-variant-tab__name { font-size: .875rem; font-weight: 600; color: var(--ng-text); }
+.ng-variant-tab__price { font-size: .8rem; font-weight: 700; color: var(--ng-blue); font-family: var(--ng-font-mono); }
+.ng-variant-tab.is-active .ng-variant-tab__name { color: var(--ng-blue); }
+
+/* ── Highlights ───────────────────────────────────────────────────────────── */
+.ng-vehicle-highlights {
+    padding: 32px 0;
+    background: var(--ng-gray-50);
+    border-bottom: 1px solid var(--ng-gray-100);
+}
+
+.ng-highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.ng-highlight-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--ng-shadow);
+}
+.ng-highlight-card__icon { font-size: 1.5rem; margin-bottom: 8px; }
+.ng-highlight-card__value { font-size: 1.1rem; font-weight: 800; color: var(--ng-text); font-family: var(--ng-font-mono); }
+.ng-highlight-card__label { font-size: .75rem; color: var(--ng-text-muted); margin-top: 4px; text-transform: uppercase; letter-spacing: .05em; }
+
+/* ── Accessories ──────────────────────────────────────────────────────────── */
+.ng-vehicle-accessories {
+    padding: 48px 0;
+    background: var(--ng-white);
+}
+
+.ng-accessories-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 20px;
+}
+
+.ng-accessory-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--ng-shadow);
+    transition: box-shadow var(--ng-transition), transform var(--ng-transition);
+}
+.ng-accessory-card:hover { box-shadow: var(--ng-shadow-md); transform: translateY(-2px); }
+
+.ng-accessory-card__img-wrap {
+    aspect-ratio: 4/3;
+    overflow: hidden;
+    background: var(--ng-gray-50);
+}
+.ng-accessory-card__img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .3s;
+}
+.ng-accessory-card:hover .ng-accessory-card__img-wrap img { transform: scale(1.04); }
+
+.ng-accessory-card__body { padding: 16px; }
+.ng-accessory-card__category {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--ng-blue);
+    margin-bottom: 6px;
+}
+.ng-accessory-card__name { font-size: .9rem; font-weight: 700; color: var(--ng-text); margin-bottom: 8px; }
+.ng-accessory-card__price { font-size: .9rem; font-weight: 800; color: var(--ng-text); font-family: var(--ng-font-mono); margin-bottom: 12px; }
+
+/* ── Form success / error states ─────────────────────────────────────────── */
+.ng-form-error {
+    background: #FEF2F2;
+    border: 1px solid #FECACA;
+    color: #DC2626;
+    border-radius: var(--ng-radius);
+    padding: 10px 14px;
+    font-size: .875rem;
+    margin-bottom: 12px;
+}
+.ng-form-success {
+    background: #F0FDF4;
+    border: 1px solid #BBF7D0;
+    color: #16A34A;
+    border-radius: var(--ng-radius);
+    padding: 10px 14px;
+    font-size: .875rem;
+    margin-bottom: 12px;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+    .ng-vehicle-hero__content { grid-template-columns: 1fr; gap: 32px; }
+    .ng-vehicle-hero__image-wrap { order: -1; }
+    .ng-vehicle-hero__image { max-height: 220px; }
+    .ng-highlights-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 768px) {
+    .ng-vehicle-hero { padding: 32px 0 40px; }
+    .ng-vehicle-hero__title { font-size: 1.8rem; }
+    .ng-vehicle-hero__price { font-size: 1.4rem; }
+    .ng-vehicle-variants { position: static; }
+    .ng-highlights-grid { grid-template-columns: repeat(2, 1fr); }
+    .ng-accessories-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .ng-vehicle-hero__actions { flex-direction: column; }
+    .ng-vehicle-hero__actions .ng-btn { width: 100%; text-align: center; }
+    .ng-highlights-grid { grid-template-columns: 1fr 1fr; }
+    .ng-accessories-grid { grid-template-columns: 1fr; }
+    .ng-variant-tab { min-width: unset; flex: 1; }
+}

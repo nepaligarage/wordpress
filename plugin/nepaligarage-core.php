@@ -46,10 +46,49 @@ function ng_load_includes(): void {
     require_once NG_PLUGIN_DIR . 'includes/class-comparison-renderer.php';
     require_once NG_PLUGIN_DIR . 'includes/class-price-estimator.php';
 
+    require_once NG_PLUGIN_DIR . 'includes/class-content-automator.php';
+    $automator = new NG_Content_Automator();
+
     if ( is_admin() ) {
         require_once NG_PLUGIN_DIR . 'includes/class-admin.php';
         new NG_Admin();
     }
+}
+
+// ---------------------------------------------------------------------------
+// Theme deploy REST endpoint (one-time use, admin-only)
+// POST /wp-json/ng/v1/deploy-theme  { "url": "https://…/nepaligarage-theme.zip" }
+// ---------------------------------------------------------------------------
+
+add_action( 'rest_api_init', function () {
+    register_rest_route( 'ng/v1', '/deploy-theme', [
+        'methods'             => 'POST',
+        'callback'            => 'ng_rest_deploy_theme',
+        'permission_callback' => function () {
+            return current_user_can( 'manage_options' );
+        },
+    ] );
+} );
+
+function ng_rest_deploy_theme( WP_REST_Request $request ): WP_REST_Response {
+    $url = esc_url_raw( $request->get_param( 'url' ) );
+    if ( empty( $url ) ) {
+        return new WP_REST_Response( [ 'error' => 'url required' ], 400 );
+    }
+
+    require_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+    require_once ABSPATH . 'wp-admin/includes/theme.php';
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/misc.php';
+
+    $skin     = new WP_Ajax_Upgrader_Skin();
+    $upgrader = new Theme_Upgrader( $skin );
+    $result   = $upgrader->install( $url, [ 'overwrite_package' => true ] );
+
+    if ( is_wp_error( $result ) ) {
+        return new WP_REST_Response( [ 'error' => $result->get_error_message() ], 500 );
+    }
+    return new WP_REST_Response( [ 'ok' => true, 'result' => $result ], 200 );
 }
 
 // ---------------------------------------------------------------------------
@@ -155,15 +194,63 @@ function ng_enqueue_assets(): void {
 register_activation_hook( __FILE__, 'ng_activate' );
 
 function ng_activate(): void {
-    // Set default options on first activation.
-    add_option( 'ng_supabase_url',  'https://eukghqvlvlveshchnugk.supabase.co' );
-    add_option( 'ng_supabase_key',  '' );
-    add_option( 'ng_usd_rate',      '137' );
-    add_option( 'ng_duty_rate_ev',  '0.40' );
-    add_option( 'ng_duty_rate_ice', '0.60' );
-    add_option( 'ng_road_tax',      '5000' );
-    add_option( 'ng_handling',      '25000' );
+    add_option( 'ng_supabase_url',         'https://eukghqvlvlveshchnugk.supabase.co' );
+    add_option( 'ng_supabase_key',         '' );
+    add_option( 'ng_supabase_service_key', '' );
+    add_option( 'ng_usd_rate',             '137' );
+    add_option( 'ng_duty_rate_ev',         '0.40' );
+    add_option( 'ng_duty_rate_ice',        '0.60' );
+    add_option( 'ng_road_tax',             '5000' );
+    add_option( 'ng_handling',             '25000' );
+    add_option( 'ng_tracked_brands',       [] );
+    add_option( 'ng_last_automation_runs', [] );
+
+    ng_register_roles();
 }
+
+// ---------------------------------------------------------------------------
+// Custom user roles
+// ---------------------------------------------------------------------------
+
+function ng_register_roles(): void {
+    // ng_operator — staff content editor with lead + order access
+    if ( ! get_role( 'ng_operator' ) ) {
+        add_role( 'ng_operator', 'NG Operator', [
+            'read'                  => true,
+            'publish_posts'         => true,
+            'edit_posts'            => true,
+            'edit_published_posts'  => true,
+            'delete_posts'          => false,
+            'upload_files'          => true,
+            'manage_options'        => false,
+            'ng_view_leads'         => true,
+            'ng_view_orders'        => true,
+            'ng_edit_vehicles'      => true,
+            'ng_manage_accessories' => true,
+        ] );
+    }
+
+    // ng_dealer_partner — external partner with limited read access
+    if ( ! get_role( 'ng_dealer_partner' ) ) {
+        add_role( 'ng_dealer_partner', 'NG Dealer Partner', [
+            'read'           => true,
+            'manage_options' => false,
+            'ng_view_leads'  => true,
+            'ng_view_orders' => true,
+        ] );
+    }
+
+    // Grant admin the custom capabilities
+    $admin = get_role( 'administrator' );
+    if ( $admin ) {
+        foreach ( [ 'ng_view_leads', 'ng_view_orders', 'ng_edit_vehicles', 'ng_manage_accessories' ] as $cap ) {
+            $admin->add_cap( $cap );
+        }
+    }
+}
+
+// Ensure roles exist on every load (in case plugin was reactivated)
+add_action( 'plugins_loaded', 'ng_register_roles' );
 
 register_deactivation_hook( __FILE__, 'ng_deactivate' );
 

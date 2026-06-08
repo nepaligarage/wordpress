@@ -1,0 +1,264 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   NepaliGarage — My Garage Dashboard Styles
+   ───────────────────────────────────────────────────────────────────────────── */
+
+body.page-template-page-dashboard .ng-footer { margin-top: 0; }
+
+/* ── Dashboard Layout ────────────────────────────────────────────────────── */
+.ng-dashboard {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: calc(100vh - 64px);
+}
+
+.ng-dashboard__sidebar {
+    background: var(--ng-white);
+    border-right: 1px solid var(--ng-gray-100);
+    padding: 24px 0;
+    position: sticky;
+    top: 64px;
+    height: calc(100vh - 64px);
+    overflow-y: auto;
+}
+
+.ng-dashboard__main {
+    padding: 32px;
+    background: var(--ng-gray-50);
+    min-height: calc(100vh - 64px);
+}
+
+/* ── Sidebar Nav ─────────────────────────────────────────────────────────── */
+.ng-dash-nav { display: flex; flex-direction: column; gap: 2px; padding: 0 12px; }
+.ng-dash-nav__item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--ng-radius);
+    font-size: .875rem;
+    font-weight: 500;
+    color: var(--ng-gray-600);
+    text-decoration: none;
+    transition: background var(--ng-transition), color var(--ng-transition);
+}
+.ng-dash-nav__item svg { width: 20px; height: 20px; flex-shrink: 0; }
+.ng-dash-nav__item:hover { background: var(--ng-gray-50); color: var(--ng-blue); text-decoration: none; }
+.ng-dash-nav__item--active { background: #EEF2FF; color: var(--ng-blue); font-weight: 600; }
+
+/* ── Panel ───────────────────────────────────────────────────────────────── */
+.ng-dash-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+}
+.ng-dash-panel__header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ng-text);
+}
+
+/* ── Vehicle Cards (dashboard) ───────────────────────────────────────────── */
+.ng-vehicle-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+.ng-garage-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    overflow: hidden;
+    box-shadow: var(--ng-shadow);
+    transition: box-shadow var(--ng-transition);
+}
+.ng-garage-card:hover { box-shadow: var(--ng-shadow-md); }
+.ng-garage-card__header {
+    background: linear-gradient(135deg, var(--ng-blue) 0%, var(--ng-blue-mid) 100%);
+    padding: 20px;
+    color: var(--ng-white);
+}
+.ng-garage-card__make { font-size: .75rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; opacity: .7; }
+.ng-garage-card__name { font-size: 1.1rem; font-weight: 700; margin-top: 4px; }
+.ng-garage-card__plate {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: .75rem;
+    font-family: var(--ng-font-mono);
+    margin-top: 6px;
+}
+.ng-garage-card__body { padding: 16px; }
+.ng-garage-card__stats {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+.ng-garage-card__stat { font-size: .8rem; color: var(--ng-text-muted); }
+.ng-garage-card__stat strong { display: block; font-size: 1rem; font-weight: 700; color: var(--ng-text); font-family: var(--ng-font-mono); }
+.ng-garage-card__actions { display: flex; gap: 8px; }
+
+/* ── Add vehicle empty state ─────────────────────────────────────────────── */
+.ng-add-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: var(--ng-white);
+    border: 2px dashed var(--ng-gray-200);
+    border-radius: var(--ng-radius-lg);
+    padding: 40px 20px;
+    cursor: pointer;
+    transition: border-color var(--ng-transition), background var(--ng-transition);
+    text-align: center;
+    color: var(--ng-text-muted);
+    min-height: 180px;
+}
+.ng-add-card:hover { border-color: var(--ng-blue); background: #F8FAFF; color: var(--ng-blue); }
+.ng-add-card svg { width: 32px; height: 32px; opacity: .5; }
+.ng-add-card span { font-size: .875rem; font-weight: 600; }
+
+/* ── Vehicle selector ────────────────────────────────────────────────────── */
+.ng-vehicle-selector {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+.ng-vehicle-selector__btn {
+    padding: 7px 14px;
+    border: 1.5px solid var(--ng-gray-200);
+    border-radius: 999px;
+    font-size: .8rem;
+    font-weight: 600;
+    background: var(--ng-white);
+    color: var(--ng-gray-600);
+    cursor: pointer;
+    transition: border-color var(--ng-transition), color var(--ng-transition), background var(--ng-transition);
+}
+.ng-vehicle-selector__btn.is-active { border-color: var(--ng-blue); color: var(--ng-blue); background: #EEF2FF; }
+.ng-vehicle-selector__btn:hover { border-color: var(--ng-blue); color: var(--ng-blue); }
+
+/* ── Log lists ───────────────────────────────────────────────────────────── */
+.ng-log-list { display: flex; flex-direction: column; gap: 0; }
+.ng-log-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: center;
+    gap: 16px;
+    background: var(--ng-white);
+    padding: 14px 16px;
+    border: 1px solid var(--ng-gray-100);
+    border-radius: 0;
+    border-bottom: none;
+}
+.ng-log-item:first-child { border-radius: var(--ng-radius) var(--ng-radius) 0 0; }
+.ng-log-item:last-child { border-radius: 0 0 var(--ng-radius) var(--ng-radius); border-bottom: 1px solid var(--ng-gray-100); }
+.ng-log-item:only-child { border-radius: var(--ng-radius); border-bottom: 1px solid var(--ng-gray-100); }
+.ng-log-item:hover { background: var(--ng-gray-50); }
+.ng-log-item__icon {
+    width: 36px; height: 36px;
+    background: var(--ng-gray-50);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.ng-log-item__label { font-size: .9rem; font-weight: 600; color: var(--ng-text); }
+.ng-log-item__sub { font-size: .8rem; color: var(--ng-text-muted); margin-top: 2px; }
+.ng-log-item__date { font-size: .8rem; color: var(--ng-text-muted); white-space: nowrap; }
+.ng-log-item__cost { font-size: .9rem; font-weight: 700; color: var(--ng-text); font-family: var(--ng-font-mono); white-space: nowrap; }
+
+/* ── Fuel stats ──────────────────────────────────────────────────────────── */
+.ng-fuel-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+}
+.ng-fuel-stat {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius);
+    padding: 16px;
+    text-align: center;
+}
+.ng-fuel-stat__value { font-size: 1.4rem; font-weight: 800; color: var(--ng-blue); font-family: var(--ng-font-mono); }
+.ng-fuel-stat__label { font-size: .75rem; color: var(--ng-text-muted); margin-top: 4px; }
+
+/* ── Document cards ──────────────────────────────────────────────────────── */
+.ng-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+}
+.ng-doc-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.ng-doc-card__type {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-bottom: 8px;
+}
+.ng-doc-card__title { font-size: .95rem; font-weight: 700; color: var(--ng-text); margin-bottom: 8px; }
+.ng-doc-card__expiry { font-size: .8rem; font-family: var(--ng-font-mono); }
+.ng-doc-card--valid { border-top: 3px solid #16A34A; }
+.ng-doc-card--warning { border-top: 3px solid #D97706; }
+.ng-doc-card--expired { border-top: 3px solid var(--ng-red); }
+.ng-doc-card--valid .ng-doc-card__type { color: #16A34A; }
+.ng-doc-card--warning .ng-doc-card__type { color: #D97706; }
+.ng-doc-card--expired .ng-doc-card__type { color: var(--ng-red); }
+
+/* ── Profile form ────────────────────────────────────────────────────────── */
+.ng-form--narrow { max-width: 480px; }
+
+/* ── Empty states ────────────────────────────────────────────────────────── */
+.ng-empty-state {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    padding: 48px 24px;
+    text-align: center;
+    color: var(--ng-text-muted);
+    font-size: .95rem;
+}
+.ng-loading {
+    text-align: center;
+    color: var(--ng-text-muted);
+    padding: 48px 24px;
+    font-size: .9rem;
+}
+
+/* ── Responsive dashboard ────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+    .ng-dashboard { grid-template-columns: 1fr; }
+    .ng-dashboard__sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--ng-gray-100);
+        padding: 12px;
+    }
+    .ng-dash-nav { flex-direction: row; overflow-x: auto; gap: 4px; padding: 0; }
+    .ng-dash-nav__item { white-space: nowrap; flex-shrink: 0; padding: 8px 12px; }
+    .ng-dash-nav__item span:not(.ng-dash-nav__item svg + *) { display: none; }
+    .ng-dashboard__main { padding: 20px 16px; }
+    .ng-fuel-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+    .ng-vehicle-list { grid-template-columns: 1fr; }
+    .ng-fuel-stats { grid-template-columns: 1fr; }
+    .ng-log-item { grid-template-columns: auto 1fr; }
+    .ng-log-item__date, .ng-log-item__cost { display: none; }
+}

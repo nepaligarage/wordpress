@@ -1,0 +1,22 @@
+/* NepaliGarage Admin Styles */
+.ng-admin h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 16px; color: #1B2A6B; }
+.ng-admin-stats { display: flex; gap: 16px; margin: 16px 0 24px; flex-wrap: wrap; }
+.ng-admin-stat-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px 28px; min-width: 140px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+.ng-admin-stat-val { font-size: 2rem; font-weight: 800; color: #1B2A6B; font-family: monospace; }
+.ng-admin-stat-lbl { font-size: .8rem; color: #666; margin-top: 4px; text-transform: uppercase; letter-spacing: .05em; }
+.ng-admin-filters { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+.ng-admin-count { font-size: .85rem; color: #666; }
+.ng-admin-table th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: #555; }
+.ng-admin-table td { vertical-align: middle; font-size: .9rem; }
+.ng-admin-badge { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.ng-admin-badge--test_drive { background: #DBEAFE; color: #1D4ED8; }
+.ng-admin-badge--quote_request { background: #FEF3C7; color: #92400E; }
+.ng-admin-badge--general_inquiry { background: #F3F4F6; color: #374151; }
+.ng-admin-badge--affiliate { background: #EDE9FE; color: #6D28D9; }
+.ng-admin-status { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: .75rem; font-weight: 600; }
+.ng-admin-status--new { background: #FEF9C3; color: #854D0E; }
+.ng-admin-status--contacted, .ng-admin-status--confirmed { background: #DCFCE7; color: #166534; }
+.ng-admin-status--follow_up, .ng-admin-status--pending { background: #FEF3C7; color: #92400E; }
+.ng-admin-status--converted, .ng-admin-status--fulfilled { background: #DBEAFE; color: #1E40AF; }
+.ng-admin-status--closed, .ng-admin-status--cancelled { background: #F3F4F6; color: #6B7280; }
+.ng-admin-status--redirect { background: #EDE9FE; color: #5B21B6; }
