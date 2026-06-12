@@ -113,6 +113,7 @@
 
     var variantTabs  = document.querySelectorAll('.ng-variant-tab');
     var activePriceEl = document.getElementById('ng-active-price');
+    var activePriceMetaEl = document.getElementById('ng-active-price-meta');
     var activeImageEl = document.getElementById('ng-active-image');
 
     variantTabs.forEach(function (tab) {
@@ -121,13 +122,18 @@
             tab.classList.add('is-active');
 
             var vid   = tab.dataset.variantId;
-            var price = tab.dataset.price;
-            var image = tab.dataset.image;
+        var price = tab.dataset.price;
+        var priceLabel = tab.dataset.priceLabel;
+        var image = tab.dataset.image;
 
             if (activePriceEl) {
-                activePriceEl.textContent = price
-                    ? 'NPR ' + parseInt(price).toLocaleString('en-IN')
-                    : 'Price on request';
+        activePriceEl.textContent = priceLabel || (price
+            ? 'NPR ' + parseInt(price).toLocaleString('en-IN')
+            : 'Price on request');
+        if (activePriceMetaEl) {
+            var priceMeta = tab.querySelector('.ng-variant-tab__price-meta');
+            activePriceMetaEl.innerHTML = priceMeta ? priceMeta.innerHTML : '';
+        }
             }
             if (activeImageEl && image) {
                 activeImageEl.src = image;

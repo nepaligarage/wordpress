@@ -884,8 +884,13 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
 .ng-article-intro { font-size: 1.1rem; line-height: 1.75; color: var(--ng-gray-800); margin-bottom: 28px; }
 
 .ng-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
+.ng-badge--official { background: #DCFCE7; color: #166534; }
+.ng-badge--estimated { background: #FEF3C7; color: #92400E; }
 .ng-badge--confirmed { background: #DCFCE7; color: #166534; }
 .ng-badge--unverified { background: #FEF3C7; color: #92400E; }
+.ng-card-price-meta,
+.ng-price-source { color: #64748b; font-size: .78rem; }
+.ng-card-price-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 
 .ng-verify-note { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 

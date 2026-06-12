@@ -34,3 +34,13 @@ automation/output/drafts/
 
 # Claude Flow internal
 .claude-flow/
+
+# Build artifacts — use automation/scripts/build-wordpress-zips.sh instead
+*.zip
+plugin-dist/
+
+# Research archive media
+research/archive/
+
+# Serena internal
+.serena/

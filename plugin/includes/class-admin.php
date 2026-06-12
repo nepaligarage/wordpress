@@ -63,6 +63,57 @@ class NG_Admin {
         return ! is_wp_error( $response ) && wp_remote_retrieve_response_code( $response ) < 300;
     }
 
+    private function clear_comparison_caches(): void {
+        global $wpdb;
+
+        $wpdb->query(
+            "DELETE FROM {$wpdb->options}
+             WHERE option_name LIKE '_transient_ng_compare_%'
+                OR option_name LIKE '_transient_timeout_ng_compare_%'
+                OR option_name LIKE '_transient_ng_sb_comparison_%'
+                OR option_name LIKE '_transient_timeout_ng_sb_comparison_%'
+                OR option_name LIKE '_transient_ngt2_%'
+                OR option_name LIKE '_transient_timeout_ngt2_%'"
+        );
+    }
+
+    private function comparison_variant_slugs( array $record ): array {
+        foreach ( [ 'variant_slugs', 'variants', 'vehicle_slugs', 'vehicles' ] as $key ) {
+            if ( ! isset( $record[ $key ] ) || '' === $record[ $key ] ) {
+                continue;
+            }
+
+            $value = $record[ $key ];
+            if ( is_string( $value ) ) {
+                $decoded = json_decode( $value, true );
+                $value   = JSON_ERROR_NONE === json_last_error() ? $decoded : explode( ',', $value );
+            }
+
+            if ( ! is_array( $value ) ) {
+                continue;
+            }
+
+            $slugs = [];
+            foreach ( $value as $item ) {
+                if ( is_array( $item ) ) {
+                    $item = $item['slug'] ?? $item['variant_slug'] ?? '';
+                }
+
+                $item = sanitize_title( (string) $item );
+                if ( $item ) {
+                    $slugs[] = $item;
+                }
+            }
+
+            $slugs = array_values( array_unique( $slugs ) );
+            if ( count( $slugs ) >= 2 ) {
+                return array_slice( $slugs, 0, 2 );
+            }
+        }
+
+        return [];
+    }
+
     public function __construct() {
         add_action( 'admin_menu',  [ $this, 'register_menus' ] );
         add_action( 'admin_init',  [ $this, 'register_settings' ] );
@@ -88,6 +139,7 @@ class NG_Admin {
         add_submenu_page( 'ng-dashboard', 'Leads',       'Leads',       'ng_view_leads',     'ng-leads',         [ $this, 'render_leads' ] );
         add_submenu_page( 'ng-dashboard', 'Orders',      'Orders',      'ng_view_orders',    'ng-orders',        [ $this, 'render_orders' ] );
         add_submenu_page( 'ng-dashboard', 'Vehicles',    'Vehicles',    'ng_edit_vehicles',  'ng-vehicles',      [ $this, 'render_vehicles' ] );
+        add_submenu_page( 'ng-dashboard', 'Comparisons', 'Comparisons', 'ng_edit_vehicles',  'ng-comparisons',   [ $this, 'render_comparisons' ] );
         add_submenu_page( 'ng-dashboard', 'Accessories', 'Accessories', 'ng_manage_accessories', 'ng-accessories', [ $this, 'render_accessories' ] );
 
         // Settings (manage_options only)
@@ -316,6 +368,109 @@ class NG_Admin {
 
     // ── Vehicles ──────────────────────────────────────────────────────────────
 
+    public function render_comparisons(): void {
+        if ( ! current_user_can( 'ng_edit_vehicles' ) ) {
+            wp_die( 'Access denied.' );
+        }
+
+        $notice = '';
+        if ( isset( $_POST['ng_comparison_nonce'], $_POST['comparison_id'], $_POST['published'] )
+            && wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['ng_comparison_nonce'] ) ), 'ng_comparison_publish' )
+        ) {
+            $comparison_id = sanitize_text_field( wp_unslash( $_POST['comparison_id'] ) );
+            $published     = (bool) absint( wp_unslash( $_POST['published'] ) );
+            $existing      = $this->sb_get( 'comparisons', [
+                'select' => '*',
+                'id'     => 'eq.' . $comparison_id,
+                'limit'  => '1',
+            ] );
+            $is_ready = ! empty( $existing[0] ) && count( $this->comparison_variant_slugs( $existing[0] ) ) >= 2;
+            $updated  = $published && ! $is_ready
+                ? false
+                : $this->sb_patch( 'comparisons', [ 'id' => 'eq.' . $comparison_id ], [ 'published' => $published ] );
+
+            if ( $updated ) {
+                $this->clear_comparison_caches();
+                $notice = $published ? 'Comparison published.' : 'Comparison unpublished.';
+            } elseif ( $published && ! $is_ready ) {
+                $notice = 'Could not publish comparison. Add two variant slugs first.';
+            } else {
+                $notice = 'Could not update comparison. Check the Supabase service key and table permissions.';
+            }
+        }
+
+        $rows = $this->sb_get( 'comparisons', [
+            'select' => '*',
+            'order'  => 'created_at.desc',
+            'limit'  => '200',
+        ] );
+        ?>
+        <div class="wrap ng-admin">
+            <h1>Comparisons</h1>
+            <p>Publish only comparisons with matched sourced rows. Public URLs use <code>/compare/[slug]/</code>.</p>
+
+            <?php if ( $notice ) : ?>
+                <div class="notice <?php echo false !== strpos( $notice, 'Could not' ) ? 'notice-error' : 'notice-success'; ?> is-dismissible">
+                    <p><?php echo esc_html( $notice ); ?></p>
+                </div>
+            <?php endif; ?>
+
+            <table class="wp-list-table widefat striped ng-admin-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Slug</th>
+                        <th>Status</th>
+                        <th>Public URL</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if ( empty( $rows ) ) : ?>
+                        <tr><td colspan="5" style="text-align:center;padding:20px">No comparisons found. Check service key.</td></tr>
+                    <?php else : ?>
+                        <?php foreach ( $rows as $row ) :
+                            $is_published = filter_var( $row['published'] ?? false, FILTER_VALIDATE_BOOLEAN );
+                            $variant_slugs = $this->comparison_variant_slugs( $row );
+                            $is_ready      = count( $variant_slugs ) >= 2;
+                            $public_url   = home_url( '/compare/' . sanitize_title( $row['slug'] ?? '' ) . '/' );
+                            ?>
+                            <tr>
+                                <td>
+                                    <strong><?php echo esc_html( $row['title'] ?? 'Untitled comparison' ); ?></strong>
+                                    <?php if ( ! empty( $row['meta_description'] ) ) : ?>
+                                        <p class="description"><?php echo esc_html( wp_trim_words( $row['meta_description'], 18 ) ); ?></p>
+                                    <?php endif; ?>
+                                </td>
+                                <td><code><?php echo esc_html( $row['slug'] ?? '' ); ?></code></td>
+                                <td>
+                                    <span class="ng-admin-badge ng-admin-badge--<?php echo $is_published ? 'published' : 'draft'; ?>">
+                                        <?php echo $is_published ? 'published' : 'draft'; ?>
+                                    </span>
+                                    <?php if ( ! $is_ready ) : ?>
+                                        <p class="description">Needs two variant slugs before publishing.</p>
+                                    <?php endif; ?>
+                                </td>
+                                <td><a href="<?php echo esc_url( $public_url ); ?>" target="_blank" rel="noopener">View</a></td>
+                                <td>
+                                    <form method="post">
+                                        <?php wp_nonce_field( 'ng_comparison_publish', 'ng_comparison_nonce' ); ?>
+                                        <input type="hidden" name="comparison_id" value="<?php echo esc_attr( $row['id'] ?? '' ); ?>">
+                                        <input type="hidden" name="published" value="<?php echo $is_published ? '0' : '1'; ?>">
+                                        <button type="submit" class="button button-small <?php echo $is_published ? '' : 'button-primary'; ?>" <?php disabled( ! $is_published && ! $is_ready ); ?>>
+                                            <?php echo $is_published ? 'Unpublish' : 'Publish'; ?>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php
+    }
+
     public function render_vehicles(): void {
         if ( ! current_user_can( 'ng_edit_vehicles' ) ) { wp_die( 'Access denied.' ); }
 
@@ -444,11 +599,15 @@ class NG_Admin {
     }
 
     private function sanitize_callback_for( string $input_type ): callable {
-        return match ( $input_type ) {
-            'url'      => 'esc_url_raw',
-            'number'   => fn( $v ) => (string) floatval( $v ),
-            'password' => fn( $v ) => sanitize_text_field( $v ),
-            default    => 'sanitize_text_field',
-        };
+        if ( 'url' === $input_type ) {
+            return 'esc_url_raw';
+        }
+        if ( 'number' === $input_type ) {
+            return function ( $v ) { return (string) floatval( $v ); };
+        }
+        if ( 'password' === $input_type ) {
+            return 'sanitize_text_field';
+        }
+        return 'sanitize_text_field';
     }
 }

@@ -31,14 +31,14 @@ cd /tmp/ng_build && zip -r nepaligarage-core.zip nepaligarage-core/ -x "*.DS_Sto
 # CRITICAL: zip must have nepaligarage-core/ as the top-level folder or WordPress will install as a separate plugin
 ```
 
-**Verify WordPress REST API:**
+**Verify WordPress REST API** (credentials in `connection.md` — never hardcode them here):
 ```bash
-curl -sk -u "admin:mc3n wNfB JKTy LCiX 6BAj GQUm" https://nepaligarage.com/wp-json/wp/v2/users/me
+curl -sk -u "admin:<app password from connection.md>" https://nepaligarage.com/wp-json/wp/v2/users/me
 ```
 
-**Verify Supabase:**
+**Verify Supabase** (connection string in `connection.md`):
 ```bash
-psql "postgresql://postgres:aiExecution%402026@db.eukghqvlvlveshchnugk.supabase.co:5432/postgres" -c "SELECT count(*) FROM brands;"
+psql "<direct connection string from connection.md>" -c "SELECT count(*) FROM brands;"
 ```
 
 **Supabase MCP** is available — use `mcp__claude_ai_Supabase__execute_sql` for schema changes and data operations instead of manual SQL when possible.

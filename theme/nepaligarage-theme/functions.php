@@ -120,6 +120,94 @@ function ngt_supabase_get( string $endpoint, array $params = [], int $ttl = HOUR
     return $data;
 }
 
+/**
+ * Fetch latest price rows for a set of variant IDs, indexed by variant_id.
+ *
+ * @param array<int, string> $variant_ids Variant UUIDs.
+ * @return array<string, array<string, mixed>>
+ */
+function ngt_prices_for_variants( array $variant_ids ): array {
+    $variant_ids = array_values( array_filter( array_unique( array_map( 'sanitize_text_field', $variant_ids ) ) ) );
+    if ( empty( $variant_ids ) ) {
+        return [];
+    }
+
+    $rows = ngt_supabase_get( 'prices', [
+        'select'     => '*,source:spec_sources(*)',
+        'variant_id' => 'in.(' . implode( ',', $variant_ids ) . ')',
+        'order'      => 'effective_date.desc',
+        'limit'      => '500',
+    ] );
+
+    $prices = [];
+    foreach ( $rows as $row ) {
+        $variant_id = $row['variant_id'] ?? '';
+        if ( $variant_id && ! isset( $prices[ $variant_id ] ) ) {
+            $prices[ $variant_id ] = $row;
+        }
+    }
+
+    return $prices;
+}
+
+/**
+ * Normalize a variant price for display. Falls back to denormalized variant price as unverified.
+ */
+function ngt_variant_price_display( array $variant, array $price_rows = [] ): array {
+    $variant_id = $variant['id'] ?? '';
+    $price      = $variant_id && isset( $price_rows[ $variant_id ] ) ? $price_rows[ $variant_id ] : [];
+    $amount     = null;
+
+    foreach ( [ 'price_npr', 'starting_price_npr', 'on_road_price_npr', 'amount_npr' ] as $key ) {
+        if ( isset( $price[ $key ] ) && '' !== $price[ $key ] ) {
+            $amount = (float) $price[ $key ];
+            break;
+        }
+    }
+
+    if ( null !== $amount ) {
+        $source = is_array( $price['source'] ?? null ) ? $price['source'] : [];
+
+        return [
+            'label'       => 'NPR ' . number_format( $amount ),
+            'confidence'  => sanitize_html_class( $price['confidence'] ?? 'unverified' ),
+            'source_url'  => $source['url'] ?? $source['source_url'] ?? '',
+            'source_name' => $source['label'] ?? $source['name'] ?? '',
+        ];
+    }
+
+    if ( ! empty( $variant['starting_price_npr'] ) ) {
+        return [
+            'label'       => 'NPR ' . number_format( (float) $variant['starting_price_npr'] ),
+            'confidence'  => 'unverified',
+            'source_url'  => '',
+            'source_name' => 'Unverified price cache',
+        ];
+    }
+
+    return [
+        'label'       => 'Price on request',
+        'confidence'  => 'unverified',
+        'source_url'  => '',
+        'source_name' => '',
+    ];
+}
+
+function ngt_price_badge_html( array $price ): string {
+    $confidence = sanitize_html_class( $price['confidence'] ?? 'unverified' );
+    $source_url = $price['source_url'] ?? '';
+    $source_name = $price['source_name'] ?? '';
+
+    $html = '<span class="ng-badge ng-badge--' . esc_attr( $confidence ) . '">' . esc_html( $confidence ) . '</span>';
+    if ( $source_url ) {
+        $html .= ' <a class="ng-price-source" href="' . esc_url( $source_url ) . '" target="_blank" rel="noopener nofollow">Source</a>';
+    } elseif ( $source_name ) {
+        $html .= ' <span class="ng-price-source">' . esc_html( $source_name ) . '</span>';
+    }
+
+    return $html;
+}
+
 // ── Team dashboard template routing ──────────────────────────────────────────
 
 add_filter( 'template_include', function ( string $template ): string {
@@ -143,14 +231,45 @@ add_action( 'wp_enqueue_scripts', function () {
 }, 20 );
 
 // ── Vehicle template auto-routing ────────────────────────────────────────────
+// Public utility pages that should render even before matching WP pages are created.
+add_filter( 'template_include', function ( string $template ): string {
+    $uri   = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
+    $parts = array_values( array_filter( explode( '/', trim( $uri, '/' ) ) ) );
+    $slug  = $parts[0] ?? '';
+
+    $routes = [
+        'about'                     => 'page-about.php',
+        'cars'                      => 'page-new-cars.php',
+        'contact'                   => 'page-contact.php',
+        'compare'                   => 'page-compare.php',
+        'electric-vehicles'         => 'page-electric-vehicles.php',
+        'nepal-car-price-estimator' => 'page-price-estimator.php',
+        'new-cars'                  => 'page-new-cars.php',
+        'news'                      => 'page-news.php',
+        'privacy-policy'            => 'page-privacy-policy.php',
+    ];
+
+    if ( isset( $routes[ $slug ] ) && ! isset( $parts[1] ) ) {
+        $route_tpl = get_template_directory() . '/' . $routes[ $slug ];
+        if ( file_exists( $route_tpl ) ) {
+            return $route_tpl;
+        }
+    }
+
+    if ( 'compare' === $slug && isset( $parts[1] ) && ! isset( $parts[2] ) ) {
+        $compare_tpl = get_template_directory() . '/page-comparison-detail.php';
+        if ( file_exists( $compare_tpl ) ) {
+            return $compare_tpl;
+        }
+    }
+
+    return $template;
+}, 6 );
+
 // Any WordPress page whose URL contains /cars/[brand]/[model]/ loads page-vehicle.php
 // automatically — no manual template assignment needed.
 
 add_filter( 'template_include', function ( string $template ): string {
-    if ( ! is_page() ) {
-        return $template;
-    }
-
     $uri   = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
     $parts = array_values( array_filter( explode( '/', trim( $uri, '/' ) ) ) );
 
@@ -159,6 +278,22 @@ add_filter( 'template_include', function ( string $template ): string {
         $vehicle_tpl = get_template_directory() . '/page-vehicle.php';
         if ( file_exists( $vehicle_tpl ) ) {
             return $vehicle_tpl;
+        }
+    }
+
+    // Match /cars/[brand]/ — exactly 2 segments → brand listing template
+    if ( isset( $parts[0], $parts[1] ) && ! isset( $parts[2] ) && $parts[0] === 'cars' ) {
+        $brand_tpl = get_template_directory() . '/page-brand.php';
+        if ( file_exists( $brand_tpl ) ) {
+            return $brand_tpl;
+        }
+    }
+
+    // Match /cars/ — 1 segment → same listing as /new-cars/
+    if ( isset( $parts[0] ) && ! isset( $parts[1] ) && $parts[0] === 'cars' ) {
+        $cars_tpl = get_template_directory() . '/page-new-cars.php';
+        if ( file_exists( $cars_tpl ) ) {
+            return $cars_tpl;
         }
     }
 

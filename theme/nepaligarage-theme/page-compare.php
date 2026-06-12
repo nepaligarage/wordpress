@@ -2,6 +2,10 @@
 /*
  * Template Name: Compare Cars
  */
+global $wp_query;
+$wp_query->is_404 = false;
+status_header( 200 );
+
 get_header();
 
 $comparisons = ngt_supabase_get( 'comparisons', [
@@ -16,7 +20,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
     <div class="ng-page-hero ng-page-hero--blue">
         <div class="ng-container">
             <h1>Compare Cars in Nepal</h1>
-            <p>Side-by-side specs, Nepal on-road prices, and honest verdicts — all from official sources.</p>
+            <p>Side-by-side specs, Nepal on-road prices, and honest verdicts with source quality shown as data improves.</p>
         </div>
     </div>
 

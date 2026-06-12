@@ -35,9 +35,9 @@ $comparisons = ngt_supabase_get( 'comparisons', [
                 </a>
             </div>
             <div class="ng-hero__trust">
-                <span>✓ Official manufacturer data</span>
+                <span>✓ Source-backed data where available</span>
                 <span>✓ Nepal customs &amp; tax included</span>
-                <span>✓ 122 spec fields per vehicle</span>
+                <span>✓ Specs expanding by model</span>
             </div>
         </div>
     </div>
@@ -79,7 +79,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
                 <span class="ng-tile__label">Price Estimator</span>
             </a>
 
-            <a href="<?php echo esc_url( home_url( '/used-cars/' ) ); ?>" class="ng-tile">
+            <a href="<?php echo esc_url( home_url( '/cars/' ) ); ?>" class="ng-tile">
                 <div class="ng-tile__icon">
                     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 32V20l6-8h20l6 8v12" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
@@ -89,10 +89,10 @@ $comparisons = ngt_supabase_get( 'comparisons', [
                         <path d="M14 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                     </svg>
                 </div>
-                <span class="ng-tile__label">Used Car Guide</span>
+                <span class="ng-tile__label">All Cars</span>
             </a>
 
-            <a href="<?php echo esc_url( home_url( '/garages/' ) ); ?>" class="ng-tile">
+            <a href="<?php echo esc_url( home_url( '/about/' ) ); ?>" class="ng-tile">
                 <div class="ng-tile__icon">
                     <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 40V20L24 10l16 10v20H8z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
@@ -100,7 +100,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
                         <path d="M8 20h32" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".4"/>
                     </svg>
                 </div>
-                <span class="ng-tile__label">Find a Garage</span>
+                <span class="ng-tile__label">About Us</span>
             </a>
 
             <a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="ng-tile ng-tile--cta">
@@ -288,7 +288,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
             </div>
             <div class="ng-trust-strip__item">
                 <span class="ng-trust-strip__number">✓</span>
-                <span class="ng-trust-strip__label">Official manufacturer &amp; importer sources only</span>
+                <span class="ng-trust-strip__label">Sources and confidence labels expanding</span>
             </div>
             <div class="ng-trust-strip__item">
                 <span class="ng-trust-strip__number">NPR</span>
@@ -342,11 +342,11 @@ if ( $recent_posts ) : ?>
             $faqs = [
                 [
                     'q' => 'How are on-road prices calculated for Nepal?',
-                    'a' => 'We use the official customs duty rates set by the Nepal government — 40% for electric vehicles and 60% for petrol/diesel vehicles — applied to the manufacturer\'s base USD price, plus 13% VAT, road tax, and handling charges. The full formula is shown on every price estimate.',
+                    'a' => 'The estimator uses configurable Nepal cost assumptions for duty, VAT, road tax, and handling. Treat estimates as planning guidance and verify final prices with authorized dealers or official notices before purchase.',
                 ],
                 [
                     'q' => 'Are the spec values official or estimates?',
-                    'a' => 'Every spec value is labeled with a confidence badge: green (official manufacturer or importer data), amber (calculated estimate with the formula shown), or red (community-reported, unverified). We never publish AI-generated spec data without human verification.',
+                    'a' => 'Spec and price values should show confidence and source context where available. Coverage is still expanding, and uncertain values are labeled conservatively rather than treated as final facts.',
                 ],
                 [
                     'q' => 'What is My Garage and is it free?',
@@ -354,7 +354,7 @@ if ( $recent_posts ) : ?>
                 ],
                 [
                     'q' => 'Can I compare more than two vehicles?',
-                    'a' => 'Currently NepaliGarage supports side-by-side comparisons of two vehicles with 122 spec fields. Multi-vehicle comparisons (3+) are on the roadmap for Phase 2.',
+                    'a' => 'Currently NepaliGarage supports side-by-side comparisons of two vehicles. Spec coverage is expanding as reliable Nepal-relevant sources are added.',
                 ],
                 [
                     'q' => 'How do I add my vehicle if it\'s not in the database?',

@@ -1,0 +1,13 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/parajuliz/nepaligarage.com/wp-content/themes/nepaligarage-theme
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -r theme/nepaligarage-theme/. $DEPLOYPATH/
+
+    - export PLUGINPATH=/home/parajuliz/nepaligarage.com/wp-content/plugins/nepaligarage-core
+    - /bin/mkdir -p $PLUGINPATH
+    - /bin/cp -r plugin/assets $PLUGINPATH/
+    - /bin/cp -r plugin/includes $PLUGINPATH/
+    - /bin/cp -r plugin/templates $PLUGINPATH/
+    - /bin/cp plugin/nepaligarage-core.php $PLUGINPATH/

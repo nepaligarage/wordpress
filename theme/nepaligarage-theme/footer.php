@@ -21,7 +21,6 @@
                     <li><a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>">New Cars Nepal</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/electric-vehicles/' ) ); ?>">Electric Vehicles</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>">Price Estimator</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/used-cars/' ) ); ?>">Used Car Guide</a></li>
                 </ul>
             </div>
 
@@ -29,8 +28,7 @@
                 <h4>Own &amp; Manage</h4>
                 <ul>
                     <li><a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>">My Garage</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/garages/' ) ); ?>">Find a Garage</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/parts-finder/' ) ); ?>">Parts Finder</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>">My Garage</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/news/' ) ); ?>">News &amp; Reviews</a></li>
                 </ul>
             </div>
@@ -51,7 +49,7 @@
         </div>
 
         <div class="ng-footer__bottom">
-            <p>&copy; <?php echo esc_html( date( 'Y' ) ); ?> NepaliGarage. All data sourced from official manufacturers and importers.</p>
+            <p>&copy; <?php echo esc_html( date( 'Y' ) ); ?> NepaliGarage. Vehicle data is verified as sources become available.</p>
             <p class="ng-footer__disclaimer">Prices shown are estimates. Verify with authorized dealers before purchase.</p>
         </div>
 

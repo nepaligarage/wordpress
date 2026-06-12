@@ -275,3 +275,80 @@
     .ng-accessories-grid { grid-template-columns: 1fr; }
     .ng-variant-tab { min-width: unset; flex: 1; }
 }
+.ng-vehicle-sourced-specs {
+    padding: 56px 0;
+    background: #f8fafc;
+}
+
+.ng-vehicle-section__head {
+    max-width: 760px;
+    margin-bottom: 24px;
+}
+
+.ng-vehicle-section__head p {
+    margin: 8px 0 0;
+    color: #64748b;
+}
+
+.ng-sourced-spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.ng-sourced-spec {
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    background: #fff;
+}
+
+.ng-sourced-spec__label {
+    color: #64748b;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.ng-sourced-spec__value {
+    margin-top: 8px;
+    color: #0f172a;
+    font-size: 1rem;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.ng-sourced-spec__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: .82rem;
+}
+
+.ng-sourced-spec__meta a,
+.ng-sourced-spec__meta span:not(.ng-badge) {
+    color: #64748b;
+}
+
+.ng-vehicle-hero__price-meta,
+.ng-variant-tab__price-meta,
+.ng-card-price-meta {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+    color: #64748b;
+    font-size: .78rem;
+}
+
+.ng-vehicle-hero__price-meta {
+    display: flex;
+}
+
+.ng-price-source {
+    color: #64748b;
+}

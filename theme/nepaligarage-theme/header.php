@@ -24,7 +24,6 @@
                 <li><a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>" class="ng-nav__link">New Cars</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/electric-vehicles/' ) ); ?>" class="ng-nav__link ng-nav__link--ev">⚡ Electric</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-nav__link">Price Estimator</a></li>
-                <li><a href="<?php echo esc_url( home_url( '/garages/' ) ); ?>" class="ng-nav__link">Garages</a></li>
                 <li><a href="<?php echo esc_url( home_url( '/news/' ) ); ?>" class="ng-nav__link">News</a></li>
             </ul>
         </nav>

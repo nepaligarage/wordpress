@@ -28,7 +28,7 @@ if ( $model_slug ) {
     $rows = ngt_supabase_get(
         'variants',
         [
-            'select'            => 'id,name,slug,year_from,starting_price_npr,body_description,image_url,thumbnail_url,is_featured,model_id,models!inner(id,name,slug,body_type,brands!inner(id,name,slug,logo_url))',
+            'select'            => 'id,name,slug,year_from,starting_price_npr,body_description,image_url,thumbnail_url,is_featured,model_id,models!inner(id,name,slug,body_type,brands!inner(id,name,slug,logo_url)),variant_specs(*,spec_field(*),source:spec_sources(*))',
             'models.slug'       => 'eq.' . $model_slug,
             'is_available_nepal'=> 'eq.true',
             'order'             => 'starting_price_npr.asc',
@@ -41,6 +41,15 @@ if ( $model_slug ) {
         $model    = $rows[0]['models'] ?? null;
         $brand    = $model ? $model['brands'] ?? null : null;
     }
+}
+
+if ( $brand && ! empty( $brand['slug'] ) && $brand_slug !== $brand['slug'] ) {
+    global $wp_query;
+    $wp_query->set_404();
+    status_header( 404 );
+    nocache_headers();
+    include get_query_template( '404' );
+    return;
 }
 
 // ── Fetch accessories for first variant ──────────────────────────────────────
@@ -70,6 +79,8 @@ if ( ! empty( $variants ) ) {
 // ── Active variant (first by default) ────────────────────────────────────────
 
 $active = ! empty( $variants ) ? $variants[0] : null;
+$price_rows = ngt_prices_for_variants( wp_list_pluck( $variants, 'id' ) );
+$active_price = $active ? ngt_variant_price_display( $active, $price_rows ) : [];
 
 if ( ! $active ) {
     // 404 fallback
@@ -83,7 +94,7 @@ if ( ! $active ) {
 
 $page_title    = esc_html( $brand['name'] . ' ' . $model['name'] . ' Price in Nepal — NepaliGarage' );
 $page_desc     = esc_attr( wp_strip_all_tags( $active['body_description'] ?? '' ) );
-$starting_price = ! empty( $active['starting_price_npr'] ) ? 'NPR ' . number_format( $active['starting_price_npr'] ) : 'Price on request';
+$starting_price = $active_price['label'] ?? 'Price on request';
 
 // Override WP SEO title for this template
 add_filter( 'pre_get_document_title', fn() => $page_title );
@@ -120,6 +131,7 @@ get_header();
                     <div class="ng-vehicle-hero__pricing">
                         <span class="ng-vehicle-hero__price-label">Starting from</span>
                         <span class="ng-vehicle-hero__price" id="ng-active-price"><?php echo esc_html( $starting_price ); ?></span>
+                        <span class="ng-vehicle-hero__price-meta" id="ng-active-price-meta"><?php echo wp_kses_post( ngt_price_badge_html( $active_price ) ); ?></span>
                     </div>
 
                     <p class="ng-vehicle-hero__desc"><?php echo esc_html( $active['body_description'] ?? '' ); ?></p>
@@ -157,16 +169,15 @@ get_header();
             <h2 class="ng-vehicle-section__title">Choose a Variant</h2>
             <div class="ng-variant-tabs" id="ng-variant-tabs">
                 <?php foreach ( $variants as $i => $v ) : ?>
+                    <?php $variant_price = ngt_variant_price_display( $v, $price_rows ); ?>
                 <button class="ng-variant-tab<?php echo $i === 0 ? ' is-active' : ''; ?>"
                         data-variant-id="<?php echo esc_attr( $v['id'] ); ?>"
-                        data-price="<?php echo esc_attr( $v['starting_price_npr'] ?? '' ); ?>"
+                            data-price="<?php echo esc_attr( $v['starting_price_npr'] ?? '' ); ?>"
+                            data-price-label="<?php echo esc_attr( $variant_price['label'] ); ?>"
                         data-image="<?php echo esc_attr( $v['image_url'] ?? '' ); ?>">
                     <span class="ng-variant-tab__name"><?php echo esc_html( $v['name'] ); ?></span>
-                    <?php if ( ! empty( $v['starting_price_npr'] ) ) : ?>
-                    <span class="ng-variant-tab__price">NPR <?php echo esc_html( number_format( $v['starting_price_npr'] ) ); ?></span>
-                    <?php else : ?>
-                    <span class="ng-variant-tab__price">Price on request</span>
-                    <?php endif; ?>
+                    <span class="ng-variant-tab__price"><?php echo esc_html( $variant_price['label'] ); ?></span>
+                    <span class="ng-variant-tab__price-meta"><?php echo wp_kses_post( ngt_price_badge_html( $variant_price ) ); ?></span>
                 </button>
                 <?php endforeach; ?>
             </div>
@@ -180,7 +191,7 @@ get_header();
             <div class="ng-highlights-grid" id="ng-highlights">
                 <?php
                 $highlights = [
-                    [ 'icon' => '⚡', 'label' => 'Starting Price', 'val' => $active['starting_price_npr'] ? 'NPR ' . number_format( $active['starting_price_npr'] ) : '—' ],
+                    [ 'icon' => '⚡', 'label' => 'Starting Price', 'val' => $starting_price ],
                     [ 'icon' => '🚗', 'label' => 'Body Type',      'val' => $model['body_type'] ?? '—' ],
                     [ 'icon' => '📅', 'label' => 'Year',            'val' => $active['year_from'] ?? '—' ],
                 ];
@@ -196,6 +207,43 @@ get_header();
     </section>
 
     <?php // ── Accessories ───────────────────────────────────────────────────── ?>
+    <?php if ( ! empty( $active['variant_specs'] ) ) : ?>
+    <section class="ng-vehicle-sourced-specs">
+        <div class="ng-container">
+            <div class="ng-vehicle-section__head">
+                <h2 class="ng-vehicle-section__title">Sourced specs for <?php echo esc_html( $active['name'] ?? 'this variant' ); ?></h2>
+                <p>Each value shows the current confidence label and source when available.</p>
+            </div>
+
+            <div class="ng-sourced-spec-grid">
+                <?php foreach ( $active['variant_specs'] as $spec ) :
+                    $field      = $spec['spec_field'] ?? [];
+                    $source     = $spec['source'] ?? [];
+                    $label      = $field['label'] ?? $field['name'] ?? $field['field_key'] ?? 'Spec';
+                    $unit       = $field['unit'] ?? '';
+                    $value      = trim( (string) ( $spec['value'] ?? '' ) . ( $unit ? ' ' . $unit : '' ) );
+                    $confidence = sanitize_html_class( $spec['confidence'] ?? 'unverified' );
+                    $source_url = $source['url'] ?? $source['source_url'] ?? '';
+                    $source_label = $source['label'] ?? $source['name'] ?? '';
+                    ?>
+                    <div class="ng-sourced-spec">
+                        <div class="ng-sourced-spec__label"><?php echo esc_html( $label ); ?></div>
+                        <div class="ng-sourced-spec__value"><?php echo esc_html( $value ?: 'N/A' ); ?></div>
+                        <div class="ng-sourced-spec__meta">
+                            <span class="ng-badge ng-badge--<?php echo esc_attr( $confidence ); ?>"><?php echo esc_html( $confidence ); ?></span>
+                            <?php if ( $source_url ) : ?>
+                                <a href="<?php echo esc_url( $source_url ); ?>" target="_blank" rel="noopener nofollow">View source</a>
+                            <?php elseif ( $source_label ) : ?>
+                                <span><?php echo esc_html( $source_label ); ?></span>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
+
     <?php if ( ! empty( $accessories ) ) : ?>
     <section class="ng-vehicle-accessories">
         <div class="ng-container">

@@ -566,8 +566,8 @@ We are building NepaliGarage (nepaligarage.com), Nepal's smart vehicle ownership
 
 Phase 1: Build the comparison engine.
 
-WordPress site: nepaligarage.com (admin: "admin", app password: "mc3n wNfB JKTy LCiX 6BAj GQUm")
-Supabase: project eukghqvlvlveshchnugk (postgres / aiExecution@2026)
+WordPress site: nepaligarage.com — credentials in connection.md (never committed)
+Supabase: project eukghqvlvlveshchnugk — credentials in connection.md (never committed)
 Connection details: see /Users/rozanpz/Documents/Claude/Projects/NepaliGarage/connection.md
 PDR: see /Users/rozanpz/Documents/Claude/Projects/NepaliGarage/research/NEPALIGARAGE_PDR.md
 
