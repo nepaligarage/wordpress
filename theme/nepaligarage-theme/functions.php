@@ -220,7 +220,7 @@ function ngt_vehicle_finance_programs( array $brand, array $model ): array {
     $model_slug = sanitize_title( (string) ( $model['slug'] ?? '' ) );
     $model_name = strtolower( trim( (string) ( $model['name'] ?? '' ) ) );
 
-    if ( 'byd' === $brand_slug && ( 'atto-2' === $model_slug || 'atto 2' === $model_name || 'byd atto 2' === $model_name ) ) {
+    if ( 'byd' === $brand_slug && ( 'atto-2' === $model_slug || 'byd-atto-2' === $model_slug || 'atto 2' === $model_name || 'byd atto 2' === $model_name ) ) {
         return [
             [
                 'id'                        => 'byd-nepal-official-baseline',
@@ -272,6 +272,53 @@ function ngt_extract_youtube_id( string $url ): string {
 
     return '';
 }
+
+function ngt_request_path_parts(): array {
+    $uri = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
+    return array_values( array_filter( explode( '/', trim( (string) $uri, '/' ) ) ) );
+}
+
+function ngt_is_cars_route_request(): bool {
+    $parts = ngt_request_path_parts();
+    return isset( $parts[0] ) && 'cars' === $parts[0];
+}
+
+function ngt_is_vehicle_route_request(): bool {
+    $parts = ngt_request_path_parts();
+    return isset( $parts[0], $parts[1], $parts[2] ) && 'cars' === $parts[0];
+}
+
+function ngt_mark_current_request_success(): void {
+    global $wp_query;
+
+    if ( isset( $wp_query ) && $wp_query instanceof WP_Query ) {
+        $wp_query->is_404      = false;
+        $wp_query->is_page     = true;
+        $wp_query->is_singular = true;
+        $wp_query->is_home     = false;
+    }
+
+    status_header( 200 );
+}
+
+add_filter( 'redirect_canonical', function ( $redirect_url, $requested_url ) {
+    if ( ngt_is_cars_route_request() ) {
+        return false;
+    }
+
+    return $redirect_url;
+}, 10, 2 );
+
+add_filter( 'pre_handle_404', function ( $preempt, $wp_query ) {
+    if ( ngt_is_cars_route_request() ) {
+        if ( $wp_query instanceof WP_Query ) {
+            $wp_query->is_404 = false;
+        }
+        return true;
+    }
+
+    return $preempt;
+}, 10, 2 );
 
 // ── Team dashboard template routing ──────────────────────────────────────────
 
@@ -341,13 +388,13 @@ add_filter( 'template_include', function ( string $template ): string {
 // automatically — no manual template assignment needed.
 
 add_filter( 'template_include', function ( string $template ): string {
-    $uri   = parse_url( $_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH );
-    $parts = array_values( array_filter( explode( '/', trim( $uri, '/' ) ) ) );
+    $parts = ngt_request_path_parts();
 
     // Match /cars/[brand]/[model]/ — exactly 3 path segments starting with "cars"
-    if ( isset( $parts[0], $parts[1], $parts[2] ) && $parts[0] === 'cars' ) {
+    if ( ngt_is_vehicle_route_request() ) {
         $vehicle_tpl = get_template_directory() . '/page-vehicle.php';
         if ( file_exists( $vehicle_tpl ) ) {
+            ngt_mark_current_request_success();
             return $vehicle_tpl;
         }
     }
@@ -356,6 +403,7 @@ add_filter( 'template_include', function ( string $template ): string {
     if ( isset( $parts[0], $parts[1] ) && ! isset( $parts[2] ) && $parts[0] === 'cars' ) {
         $brand_tpl = get_template_directory() . '/page-brand.php';
         if ( file_exists( $brand_tpl ) ) {
+            ngt_mark_current_request_success();
             return $brand_tpl;
         }
     }
@@ -364,6 +412,7 @@ add_filter( 'template_include', function ( string $template ): string {
     if ( isset( $parts[0] ) && ! isset( $parts[1] ) && $parts[0] === 'cars' ) {
         $cars_tpl = get_template_directory() . '/page-new-cars.php';
         if ( file_exists( $cars_tpl ) ) {
+            ngt_mark_current_request_success();
             return $cars_tpl;
         }
     }

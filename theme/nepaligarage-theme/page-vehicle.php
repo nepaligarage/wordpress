@@ -176,7 +176,7 @@ $finance_programs = ( $brand && $model ) ? ngt_vehicle_finance_programs( $brand,
 $has_finance      = ! empty( $finance_programs ) && null !== $active_amount;
 $finance_programs_json = $has_finance ? wp_json_encode( array_values( $finance_programs ) ) : '';
 $default_compare_url = '';
-if ( ( $brand['slug'] ?? '' ) === 'byd' && ( $model['slug'] ?? '' ) === 'atto-2' ) {
+if ( ( $brand['slug'] ?? '' ) === 'byd' && in_array( ( $model['slug'] ?? '' ), [ 'atto-2', 'byd-atto-2' ], true ) ) {
     $default_compare_url = home_url( '/compare/byd-atto-2-vs-toyota-urban-cruiser-ebella/' );
 }
 
