@@ -171,6 +171,16 @@ $active_price   = $active ? ngt_variant_price_display( $active, $price_rows ) : 
 $active_amount  = $active ? ngt_variant_price_amount( $active, $price_rows ) : null;
 $featured_video = $review_videos[0] ?? null;
 $supporting_videos = count( $review_videos ) > 1 ? array_slice( $review_videos, 1, 3 ) : [];
+$hero_image_url = '';
+if ( ! empty( $active['image_url'] ) ) {
+    $hero_image_url = (string) $active['image_url'];
+} elseif ( ! empty( $gallery_images[0]['url'] ) ) {
+    $hero_image_url = (string) $gallery_images[0]['url'];
+}
+$brochure_url = ! empty( $model['brochure_url'] ) ? (string) $model['brochure_url'] : '';
+if ( ! $brochure_url && ( $brand['slug'] ?? '' ) === 'byd' && in_array( ( $model['slug'] ?? '' ), [ 'atto-2', 'byd-atto-2' ], true ) ) {
+    $brochure_url = 'https://cimex.com.np/new2.pdf';
+}
 
 $finance_programs = ( $brand && $model ) ? ngt_vehicle_finance_programs( $brand, $model ) : [];
 $has_finance      = ! empty( $finance_programs ) && null !== $active_amount;
@@ -289,12 +299,16 @@ get_header();
                             data-model-name="<?php echo esc_attr( trim( ( $brand['name'] ?? '' ) . ' ' . ( $model['name'] ?? '' ) ) ); ?>">
                         Add to Compare
                     </button>
+                    <?php if ( $brochure_url ) : ?>
+                    <a class="ng-btn ng-btn--outline-white ng-btn--lg ng-vehicle-hero__brochure-btn"
+                       href="<?php echo esc_url( $brochure_url ); ?>" target="_blank" rel="noopener nofollow">Download Brochure</a>
+                    <?php endif; ?>
                 </div>
                 <div class="ng-vehicle-hero__compare-note" id="ng-compare-note" aria-live="polite"></div>
             </div>
             <div class="ng-vehicle-hero__image-wrap">
-                <?php if ( ! empty( $active['image_url'] ) ) : ?>
-                <img src="<?php echo esc_url( $active['image_url'] ); ?>"
+                <?php if ( $hero_image_url ) : ?>
+                <img src="<?php echo esc_url( $hero_image_url ); ?>"
                      alt="<?php echo esc_attr( $brand['name'] . ' ' . $model['name'] ); ?>"
                      class="ng-vehicle-hero__image" loading="eager" id="ng-active-image">
                 <?php else : ?>
@@ -322,7 +336,7 @@ get_header();
                     data-price="<?php echo esc_attr( $v['starting_price_npr'] ?? '' ); ?>"
                     data-price-amount="<?php echo esc_attr( null !== $variant_price_amount ? (string) $variant_price_amount : '' ); ?>"
                     data-price-label="<?php echo esc_attr( $vp['label'] ); ?>"
-                    data-image="<?php echo esc_attr( $v['image_url'] ?? '' ); ?>">
+                    data-image="<?php echo esc_attr( $v['image_url'] ?: $hero_image_url ); ?>">
                 <span class="ng-variant-tab__name"><?php echo esc_html( $v['name'] ); ?></span>
                 <span class="ng-variant-tab__price"><?php echo esc_html( $vp['label'] ); ?></span>
                 <span class="ng-variant-tab__price-meta"><?php echo wp_kses_post( ngt_price_badge_html( $vp ) ); ?></span>
