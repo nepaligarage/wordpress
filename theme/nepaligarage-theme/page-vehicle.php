@@ -165,11 +165,20 @@ if ( $model_id ) {
 }
 
 // ── Active variant + prices ───────────────────────────────────────────────────
-$active       = ! empty( $variants ) ? $variants[0] : null;
-$price_rows   = ngt_prices_for_variants( wp_list_pluck( $variants, 'id' ) );
-$active_price = $active ? ngt_variant_price_display( $active, $price_rows ) : [];
+$active         = ! empty( $variants ) ? $variants[0] : null;
+$price_rows     = ngt_prices_for_variants( wp_list_pluck( $variants, 'id' ) );
+$active_price   = $active ? ngt_variant_price_display( $active, $price_rows ) : [];
+$active_amount  = $active ? ngt_variant_price_amount( $active, $price_rows ) : null;
 $featured_video = $review_videos[0] ?? null;
 $supporting_videos = count( $review_videos ) > 1 ? array_slice( $review_videos, 1, 3 ) : [];
+
+$finance_programs = ( $brand && $model ) ? ngt_vehicle_finance_programs( $brand, $model ) : [];
+$has_finance      = ! empty( $finance_programs ) && null !== $active_amount;
+$finance_programs_json = $has_finance ? wp_json_encode( array_values( $finance_programs ) ) : '';
+$default_compare_url = '';
+if ( ( $brand['slug'] ?? '' ) === 'byd' && ( $model['slug'] ?? '' ) === 'atto-2' ) {
+    $default_compare_url = home_url( '/compare/byd-atto-2-vs-toyota-urban-cruiser-ebella/' );
+}
 
 // Spec display uses the first variant that has populated spec data.
 // The cheapest variant ($active) may have no specs if only one trim is populated.
@@ -269,10 +278,19 @@ get_header();
                     <button class="ng-btn ng-btn--red ng-btn--lg" id="ng-enquire-btn"
                             data-variant-id="<?php echo esc_attr( $active['id'] ); ?>"
                             data-lead-type="test_drive">Book a Test Drive</button>
-                    <button class="ng-btn ng-btn--outline ng-btn--lg" id="ng-quote-btn"
+                    <button class="ng-btn ng-btn--outline-white ng-btn--lg ng-vehicle-hero__quote-btn" id="ng-quote-btn"
                             data-variant-id="<?php echo esc_attr( $active['id'] ); ?>"
                             data-lead-type="quote_request">Get a Quote</button>
+                    <button class="ng-btn ng-btn--outline-white ng-btn--lg ng-vehicle-hero__compare-btn" id="ng-compare-btn"
+                            type="button"
+                            data-compare-url="<?php echo esc_url( $default_compare_url ); ?>"
+                            data-brand-slug="<?php echo esc_attr( $brand['slug'] ?? '' ); ?>"
+                            data-model-slug="<?php echo esc_attr( $model['slug'] ?? '' ); ?>"
+                            data-model-name="<?php echo esc_attr( trim( ( $brand['name'] ?? '' ) . ' ' . ( $model['name'] ?? '' ) ) ); ?>">
+                        Add to Compare
+                    </button>
                 </div>
+                <div class="ng-vehicle-hero__compare-note" id="ng-compare-note" aria-live="polite"></div>
             </div>
             <div class="ng-vehicle-hero__image-wrap">
                 <?php if ( ! empty( $active['image_url'] ) ) : ?>
@@ -297,10 +315,12 @@ get_header();
         <h2 class="ng-vehicle-section__title">Choose a Variant</h2>
         <div class="ng-variant-tabs" id="ng-variant-tabs">
             <?php foreach ( $variants as $i => $v ) :
-                $vp = ngt_variant_price_display( $v, $price_rows ); ?>
+                $vp = ngt_variant_price_display( $v, $price_rows );
+                $variant_price_amount = ngt_variant_price_amount( $v, $price_rows ); ?>
             <button class="ng-variant-tab<?php echo $i === 0 ? ' is-active' : ''; ?>"
                     data-variant-id="<?php echo esc_attr( $v['id'] ); ?>"
                     data-price="<?php echo esc_attr( $v['starting_price_npr'] ?? '' ); ?>"
+                    data-price-amount="<?php echo esc_attr( null !== $variant_price_amount ? (string) $variant_price_amount : '' ); ?>"
                     data-price-label="<?php echo esc_attr( $vp['label'] ); ?>"
                     data-image="<?php echo esc_attr( $v['image_url'] ?? '' ); ?>">
                 <span class="ng-variant-tab__name"><?php echo esc_html( $v['name'] ); ?></span>
@@ -308,6 +328,102 @@ get_header();
                 <span class="ng-variant-tab__price-meta"><?php echo wp_kses_post( ngt_price_badge_html( $vp ) ); ?></span>
             </button>
             <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<?php if ( $has_finance ) :
+    $primary_finance = $finance_programs[0];
+    $min_downpayment_percent = (float) ( $primary_finance['min_downpayment_percent'] ?? 0 );
+    $default_years = (int) ( $primary_finance['default_years'] ?? 0 );
+    $supported_years = array_values( array_filter( array_map( 'intval', (array) ( $primary_finance['supported_years'] ?? [] ) ) ) );
+?>
+<section class="ng-vehicle-finance" id="ng-vehicle-finance"
+         data-price-amount="<?php echo esc_attr( null !== $active_amount ? (string) $active_amount : '' ); ?>"
+         data-finance-programs="<?php echo esc_attr( $finance_programs_json ); ?>">
+    <div class="ng-container">
+        <div class="ng-vehicle-finance__shell">
+            <div class="ng-vehicle-finance__intro">
+                <span class="ng-vehicle-finance__eyebrow">BYD Atto 2 finance snapshot</span>
+                <h2 class="ng-vehicle-section__title">EMI planning with the lowest official down payment pre-filled</h2>
+                <p class="ng-vehicle-finance__copy"><?php echo esc_html( $primary_finance['source_note'] ?? '' ); ?></p>
+                <div class="ng-vehicle-finance__source-row">
+                    <span class="ng-vehicle-finance__source-label"><?php echo esc_html( $primary_finance['source_name'] ?? 'Official source' ); ?></span>
+                    <?php if ( ! empty( $primary_finance['source_url'] ) ) : ?>
+                    <a href="<?php echo esc_url( $primary_finance['source_url'] ); ?>" target="_blank" rel="noopener nofollow">Open official EMI source ↗</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+
+            <div class="ng-vehicle-finance__layout">
+                <div class="ng-vehicle-finance__controls">
+                    <div class="ng-vehicle-finance__field ng-vehicle-finance__field--full">
+                        <label for="ng-finance-program">Finance baseline</label>
+                        <select id="ng-finance-program">
+                            <?php foreach ( $finance_programs as $program ) : ?>
+                            <option value="<?php echo esc_attr( $program['id'] ); ?>"><?php echo esc_html( $program['label'] ); ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="ng-vehicle-finance__field ng-vehicle-finance__field--full">
+                        <label for="ng-finance-downpayment">Down payment (NPR)</label>
+                        <input id="ng-finance-downpayment" type="number" min="0" step="10000"
+                               value="<?php echo esc_attr( (string) round( ( (float) $active_amount ) * ( $min_downpayment_percent / 100 ) ) ); ?>">
+                        <p class="ng-vehicle-finance__helper">Lowest official down payment for this baseline: <strong><?php echo esc_html( number_format_i18n( $min_downpayment_percent, 0 ) ); ?>%</strong></p>
+                    </div>
+
+                    <div class="ng-vehicle-finance__field">
+                        <label for="ng-finance-years">Years to pay back</label>
+                        <select id="ng-finance-years">
+                            <?php foreach ( $supported_years as $years ) : ?>
+                            <option value="<?php echo esc_attr( (string) $years ); ?>"<?php selected( $years, $default_years ); ?>><?php echo esc_html( (string) $years ); ?> years</option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+
+                    <div class="ng-vehicle-finance__field">
+                        <label for="ng-finance-interest">Interest rate</label>
+                        <input id="ng-finance-interest" type="text" value="<?php echo esc_attr( number_format_i18n( (float) ( $primary_finance['interest_rate'] ?? 0 ), 2 ) ); ?>% p.a." readonly>
+                        <p class="ng-vehicle-finance__helper">Locked to the current official BYD Nepal baseline.</p>
+                    </div>
+                </div>
+
+                <aside class="ng-vehicle-finance__results" aria-label="Finance estimate results">
+                    <div class="ng-vehicle-finance__result-card">
+                        <span>Vehicle price</span>
+                        <strong id="ng-finance-price">—</strong>
+                    </div>
+                    <div class="ng-vehicle-finance__result-card">
+                        <span>Down payment</span>
+                        <strong id="ng-finance-downpayment-display">—</strong>
+                        <small id="ng-finance-downpayment-percent">—</small>
+                    </div>
+                    <div class="ng-vehicle-finance__result-card ng-vehicle-finance__result-card--emphasis">
+                        <span>Estimated monthly EMI</span>
+                        <strong id="ng-finance-monthly-emi">—</strong>
+                        <small id="ng-finance-term-summary">—</small>
+                    </div>
+                    <div class="ng-vehicle-finance__result-card">
+                        <span>Loan amount</span>
+                        <strong id="ng-finance-loan-amount">—</strong>
+                    </div>
+                    <div class="ng-vehicle-finance__result-card">
+                        <span>Total repayment</span>
+                        <strong id="ng-finance-total-payable">—</strong>
+                    </div>
+                    <div class="ng-vehicle-finance__result-card">
+                        <span>Total interest</span>
+                        <strong id="ng-finance-total-interest">—</strong>
+                    </div>
+                </aside>
+            </div>
+
+            <div class="ng-vehicle-finance__footnote">
+                <p><?php echo esc_html( $primary_finance['processing_fee_note'] ?? '' ); ?></p>
+                <button class="ng-btn ng-btn--red" type="button" id="ng-finance-quote-btn">Get finance quote for this setup</button>
+            </div>
         </div>
     </div>
 </section>

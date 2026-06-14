@@ -158,19 +158,29 @@ function ngt_prices_for_variants( array $variant_ids ): array {
 /**
  * Normalize a variant price for display. Falls back to denormalized variant price as unverified.
  */
-function ngt_variant_price_display( array $variant, array $price_rows = [] ): array {
+function ngt_variant_price_amount( array $variant, array $price_rows = [] ): ?float {
     $variant_id = $variant['id'] ?? '';
     $price      = $variant_id && isset( $price_rows[ $variant_id ] ) ? $price_rows[ $variant_id ] : [];
-    $amount     = null;
 
     foreach ( [ 'price_npr', 'starting_price_npr', 'on_road_price_npr', 'amount_npr' ] as $key ) {
         if ( isset( $price[ $key ] ) && '' !== $price[ $key ] ) {
-            $amount = (float) $price[ $key ];
-            break;
+            return (float) $price[ $key ];
         }
     }
 
-    if ( null !== $amount ) {
+    if ( ! empty( $variant['starting_price_npr'] ) ) {
+        return (float) $variant['starting_price_npr'];
+    }
+
+    return null;
+}
+
+function ngt_variant_price_display( array $variant, array $price_rows = [] ): array {
+    $variant_id = $variant['id'] ?? '';
+    $price      = $variant_id && isset( $price_rows[ $variant_id ] ) ? $price_rows[ $variant_id ] : [];
+    $amount     = ngt_variant_price_amount( $variant, $price_rows );
+
+    if ( null !== $amount && ! empty( $price ) ) {
         $source = is_array( $price['source'] ?? null ) ? $price['source'] : [];
 
         return [
@@ -181,9 +191,9 @@ function ngt_variant_price_display( array $variant, array $price_rows = [] ): ar
         ];
     }
 
-    if ( ! empty( $variant['starting_price_npr'] ) ) {
+    if ( null !== $amount ) {
         return [
-            'label'       => 'NPR ' . number_format( (float) $variant['starting_price_npr'] ),
+            'label'       => 'NPR ' . number_format( $amount ),
             'confidence'  => 'unverified',
             'source_url'  => '',
             'source_name' => 'Unverified price cache',
@@ -196,6 +206,39 @@ function ngt_variant_price_display( array $variant, array $price_rows = [] ): ar
         'source_url'  => '',
         'source_name' => '',
     ];
+}
+
+/**
+ * Model-specific finance programs shown on vehicle pages.
+ *
+ * Keep these programs tied to traceable public sources until they move into Supabase.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function ngt_vehicle_finance_programs( array $brand, array $model ): array {
+    $brand_slug = sanitize_title( (string) ( $brand['slug'] ?? '' ) );
+    $model_slug = sanitize_title( (string) ( $model['slug'] ?? '' ) );
+    $model_name = strtolower( trim( (string) ( $model['name'] ?? '' ) ) );
+
+    if ( 'byd' === $brand_slug && ( 'atto-2' === $model_slug || 'atto 2' === $model_name || 'byd atto 2' === $model_name ) ) {
+        return [
+            [
+                'id'                        => 'byd-nepal-official-baseline',
+                'label'                     => 'BYD Nepal official EMI baseline',
+                'source_name'               => 'Cimex BYD Nepal EMI Calculator',
+                'source_url'                => 'https://cimex.com.np/emi-calculator',
+                'source_note'               => 'Uses the current BYD Nepal calculator baseline: 40% down payment, 5.27% annual interest, 7-year planning horizon.',
+                'interest_rate'             => 5.27,
+                'min_downpayment_percent'   => 40,
+                'max_downpayment_percent'   => 90,
+                'supported_years'           => [ 1, 2, 3, 4, 5, 6, 7 ],
+                'default_years'             => 7,
+                'processing_fee_note'       => 'Dealer and bank processing fees are not included in this EMI preview.',
+            ],
+        ];
+    }
+
+    return [];
 }
 
 function ngt_price_badge_html( array $price ): string {

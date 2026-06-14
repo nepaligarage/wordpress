@@ -90,6 +90,33 @@
     flex-wrap: wrap;
 }
 
+.ng-vehicle-hero__quote-btn,
+.ng-vehicle-hero__compare-btn {
+    color: var(--ng-white);
+    border-color: rgba(255,255,255,.62);
+    background: rgba(255,255,255,.06);
+}
+
+.ng-vehicle-hero__quote-btn:hover,
+.ng-vehicle-hero__compare-btn:hover {
+    color: var(--ng-white);
+    border-color: rgba(255,255,255,.92);
+    background: rgba(255,255,255,.16);
+}
+
+.ng-vehicle-hero__compare-note {
+    margin-top: 14px;
+    color: rgba(255,255,255,.82);
+    font-size: .85rem;
+    line-height: 1.6;
+}
+
+.ng-vehicle-hero__compare-note a {
+    color: var(--ng-white);
+    font-weight: 700;
+    text-decoration: underline;
+}
+
 .ng-vehicle-hero__image-wrap {
     display: flex;
     align-items: center;
@@ -112,6 +139,183 @@
     opacity: .35;
     color: var(--ng-white);
     font-size: .85rem;
+}
+
+/* ── Variant Tabs ─────────────────────────────────────────────────────────── */
+.ng-vehicle-finance {
+    padding: 32px 0 40px;
+    background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    border-bottom: 1px solid #fed7aa;
+}
+
+.ng-vehicle-finance__shell {
+    border: 1px solid #fdba74;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #fff 0%, #fff7ed 50%, #fff 100%);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, .08);
+    padding: 28px;
+}
+
+.ng-vehicle-finance__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: .72rem;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #c2410c;
+}
+
+.ng-vehicle-finance__copy {
+    margin: 12px 0 0;
+    max-width: 780px;
+    color: #7c2d12;
+    line-height: 1.7;
+}
+
+.ng-vehicle-finance__source-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+    margin-top: 14px;
+    font-size: .88rem;
+}
+
+.ng-vehicle-finance__source-label {
+    font-weight: 700;
+    color: #9a3412;
+}
+
+.ng-vehicle-finance__source-row a {
+    color: #c2410c;
+    font-weight: 700;
+}
+
+.ng-vehicle-finance__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(320px, .9fr);
+    gap: 24px;
+    margin-top: 24px;
+}
+
+.ng-vehicle-finance__controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ng-vehicle-finance__field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ng-vehicle-finance__field--full {
+    grid-column: 1 / -1;
+}
+
+.ng-vehicle-finance__field label {
+    font-size: .82rem;
+    font-weight: 700;
+    color: #7c2d12;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+
+.ng-vehicle-finance__field input,
+.ng-vehicle-finance__field select {
+    width: 100%;
+    min-height: 52px;
+    border-radius: 16px;
+    border: 1px solid #fdba74;
+    background: rgba(255,255,255,.96);
+    padding: 0 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--ng-text);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.55);
+}
+
+.ng-vehicle-finance__field input[readonly] {
+    background: #fff7ed;
+    color: #9a3412;
+}
+
+.ng-vehicle-finance__helper {
+    margin: 0;
+    color: #9a3412;
+    font-size: .82rem;
+    line-height: 1.5;
+}
+
+.ng-vehicle-finance__results {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.ng-vehicle-finance__result-card {
+    padding: 18px;
+    border-radius: 20px;
+    background: #fff;
+    border: 1px solid #fed7aa;
+    box-shadow: 0 16px 30px rgba(15, 23, 42, .06);
+}
+
+.ng-vehicle-finance__result-card span,
+.ng-vehicle-finance__result-card small {
+    display: block;
+}
+
+.ng-vehicle-finance__result-card span {
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: #9a3412;
+}
+
+.ng-vehicle-finance__result-card strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 1.15rem;
+    line-height: 1.3;
+    color: var(--ng-text);
+    font-family: var(--ng-font-mono);
+}
+
+.ng-vehicle-finance__result-card small {
+    margin-top: 8px;
+    color: var(--ng-text-muted);
+}
+
+.ng-vehicle-finance__result-card--emphasis {
+    background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+    border-color: #111827;
+}
+
+.ng-vehicle-finance__result-card--emphasis span,
+.ng-vehicle-finance__result-card--emphasis strong,
+.ng-vehicle-finance__result-card--emphasis small {
+    color: var(--ng-white);
+}
+
+.ng-vehicle-finance__footnote {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+    padding-top: 18px;
+    border-top: 1px solid #fed7aa;
+}
+
+.ng-vehicle-finance__footnote p {
+    margin: 0;
+    color: #7c2d12;
+    line-height: 1.6;
 }
 
 /* ── Variant Tabs ─────────────────────────────────────────────────────────── */
@@ -257,6 +461,7 @@
     .ng-vehicle-hero__image-wrap { order: -1; }
     .ng-vehicle-hero__image { max-height: 220px; }
     .ng-highlights-grid { grid-template-columns: repeat(3, 1fr); }
+    .ng-vehicle-finance__layout { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 768px) {
@@ -266,6 +471,10 @@
     .ng-vehicle-variants { position: static; }
     .ng-highlights-grid { grid-template-columns: repeat(2, 1fr); }
     .ng-accessories-grid { grid-template-columns: repeat(2, 1fr); }
+    .ng-vehicle-finance__shell { padding: 22px 18px; }
+    .ng-vehicle-finance__controls,
+    .ng-vehicle-finance__results { grid-template-columns: 1fr; }
+    .ng-vehicle-finance__footnote { flex-direction: column; align-items: flex-start; }
 }
 
 @media (max-width: 480px) {
