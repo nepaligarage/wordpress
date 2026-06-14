@@ -352,3 +352,568 @@
 .ng-price-source {
     color: #64748b;
 }
+
+/* ── Gallery ──────────────────────────────────────────────────────────────── */
+.ng-vehicle-gallery {
+    padding: 24px 0;
+    background: var(--ng-gray-900, #0f172a);
+}
+
+.ng-gallery-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+.ng-gallery-strip::-webkit-scrollbar { display: none; }
+
+.ng-gallery-thumb {
+    flex: 0 0 auto;
+    width: 220px;
+    height: 155px;
+    border-radius: var(--ng-radius);
+    overflow: hidden;
+    cursor: pointer;
+    scroll-snap-align: start;
+    border: 2px solid transparent;
+    transition: border-color var(--ng-transition);
+}
+.ng-gallery-thumb:hover { border-color: var(--ng-blue); }
+.ng-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+.ng-gallery-thumb--single {
+    width: 100%;
+    max-width: 560px;
+    height: 320px;
+    margin: 0 auto;
+    cursor: default;
+}
+
+@media (max-width: 768px) {
+    .ng-gallery-thumb { width: 160px; height: 115px; }
+    .ng-gallery-thumb--single { max-width: 100%; height: 220px; }
+}
+
+.ng-gallery-thumb.is-active {
+    border-color: var(--ng-red);
+    box-shadow: 0 0 0 1px rgba(224, 32, 32, .25);
+}
+
+/* ── Videos + parts + brochure polish ─────────────────────────────────────── */
+.ng-vehicle-videos,
+.ng-vehicle-parts,
+.ng-vehicle-brochure,
+.ng-vehicle-competition,
+.ng-vehicle-accessories {
+    padding: 56px 0;
+}
+
+.ng-video-feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr);
+    gap: 24px;
+    padding: 24px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, #0f172a 0%, #162033 100%);
+    color: var(--ng-white);
+    box-shadow: var(--ng-shadow-lg);
+}
+
+.ng-video-feature__player-wrap {
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255,255,255,.06);
+    min-height: 320px;
+}
+
+.ng-video-feature__player {
+    width: 100%;
+    height: 100%;
+    min-height: 320px;
+    border: 0;
+}
+
+.ng-video-feature__body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.ng-video-feature__eyebrow,
+.ng-brochure-cta__eyebrow,
+.ng-part-card__category,
+.ng-video-card__type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.ng-video-feature__eyebrow,
+.ng-brochure-cta__eyebrow,
+.ng-video-card__type {
+    color: #fca5a5;
+}
+
+.ng-video-feature__title {
+    color: var(--ng-white);
+    font-size: 1.6rem;
+    line-height: 1.2;
+    margin: 12px 0 10px;
+}
+
+.ng-video-feature__meta,
+.ng-video-feature__copy {
+    color: rgba(255,255,255,.74);
+    line-height: 1.65;
+}
+
+.ng-video-card__meta,
+.ng-part-card__notes {
+    color: var(--ng-text-muted);
+    line-height: 1.65;
+}
+
+.ng-video-grid,
+.ng-parts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 20px;
+}
+
+.ng-video-card,
+.ng-part-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--ng-shadow);
+}
+
+.ng-video-card__thumb,
+.ng-part-card__media {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--ng-gray-900);
+}
+
+.ng-video-card__thumb img,
+.ng-part-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ng-video-card__play {
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, .82);
+    color: var(--ng-white);
+    padding: 9px 14px;
+    font-size: .82rem;
+    font-weight: 700;
+}
+
+.ng-video-card__body,
+.ng-part-card__body {
+    padding: 18px;
+}
+
+.ng-video-card__title,
+.ng-part-card__name {
+    font-size: 1rem;
+    line-height: 1.4;
+    margin: 8px 0 6px;
+    color: var(--ng-text);
+}
+
+.ng-part-card__category {
+    color: var(--ng-red);
+}
+
+.ng-part-card__price {
+    font-size: .95rem;
+    font-weight: 800;
+    color: var(--ng-text);
+    font-family: var(--ng-font-mono);
+    margin-bottom: 8px;
+}
+
+.ng-part-card__link {
+    display: inline-flex;
+    margin-top: 10px;
+    color: var(--ng-red);
+    font-weight: 700;
+}
+
+.ng-part-card__placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,.58);
+    font-size: .86rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.ng-brochure-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 24px 26px;
+    border-radius: 22px;
+    background: linear-gradient(180deg, #fff 0%, #fff5f5 100%);
+    border: 1px solid #fecaca;
+    box-shadow: var(--ng-shadow);
+}
+
+.ng-brochure-cta__body strong {
+    display: block;
+    font-size: 1.2rem;
+    color: var(--ng-text);
+    margin: 8px 0;
+}
+
+.ng-brochure-cta__body p {
+    color: var(--ng-text-muted);
+    max-width: 700px;
+}
+
+@media (max-width: 1024px) {
+    .ng-video-feature {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .ng-vehicle-videos,
+    .ng-vehicle-parts,
+    .ng-vehicle-brochure,
+    .ng-vehicle-competition,
+    .ng-vehicle-accessories {
+        padding: 40px 0;
+    }
+
+    .ng-brochure-cta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .ng-video-feature {
+        padding: 18px;
+    }
+
+    .ng-video-feature__player-wrap,
+    .ng-video-feature__player {
+        min-height: 240px;
+    }
+}
+
+/* ── Key Specs Strip ──────────────────────────────────────────────────────── */
+.ng-vehicle-keyspecs {
+    padding: 28px 0;
+    background: var(--ng-white);
+    border-bottom: 1px solid var(--ng-gray-100);
+}
+
+.ng-keyspecs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.ng-keyspec-card {
+    border: 1px solid var(--ng-gray-100);
+    border-top: 3px solid var(--ng-blue);
+    border-radius: var(--ng-radius);
+    padding: 14px 16px;
+    background: var(--ng-gray-50);
+}
+
+.ng-keyspec-card__slot {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--ng-blue);
+    margin-bottom: 6px;
+}
+
+.ng-keyspec-card__value {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--ng-text);
+    font-family: var(--ng-font-mono);
+    overflow-wrap: anywhere;
+}
+
+/* ── Spec Tabs ────────────────────────────────────────────────────────────── */
+.ng-vehicle-specs-tabbed {
+    padding: 48px 0;
+    background: #f8fafc;
+}
+
+.ng-spec-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 24px;
+}
+
+.ng-spec-tab {
+    padding: 7px 16px;
+    border: 1.5px solid var(--ng-gray-200);
+    border-radius: 999px;
+    background: var(--ng-white);
+    font-size: .82rem;
+    font-weight: 600;
+    color: var(--ng-text-muted);
+    cursor: pointer;
+    transition: border-color var(--ng-transition), color var(--ng-transition), background var(--ng-transition);
+}
+.ng-spec-tab:hover { border-color: var(--ng-blue); color: var(--ng-blue); }
+.ng-spec-tab.is-active {
+    border-color: var(--ng-blue);
+    background: var(--ng-blue);
+    color: var(--ng-white);
+}
+
+.ng-spec-category { display: none; }
+.ng-spec-category.is-active { display: block; }
+
+/* ── Pros & Cons ──────────────────────────────────────────────────────────── */
+.ng-vehicle-proscons {
+    padding: 48px 0;
+    background: var(--ng-white);
+    border-top: 1px solid var(--ng-gray-100);
+}
+
+.ng-proscons-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.ng-proscons-col h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid;
+}
+.ng-proscons-col--pros h3 { color: #16a34a; border-color: #16a34a; }
+.ng-proscons-col--cons h3 { color: #dc2626; border-color: #dc2626; }
+
+.ng-proscons-col {
+    padding: 20px;
+    border-radius: var(--ng-radius-lg);
+    background: var(--ng-gray-50);
+    border: 1px solid var(--ng-gray-100);
+}
+.ng-proscons-col--pros { border-left: 4px solid #16a34a; }
+.ng-proscons-col--cons { border-left: 4px solid #dc2626; }
+
+.ng-pc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--ng-gray-100);
+    font-size: .9rem;
+    color: var(--ng-text);
+    line-height: 1.5;
+}
+.ng-pc-item:last-child { border-bottom: none; }
+
+.ng-pc-icon {
+    flex-shrink: 0;
+    font-size: .9rem;
+    font-weight: 800;
+    margin-top: 1px;
+}
+.ng-pc-item--pro .ng-pc-icon { color: #16a34a; }
+.ng-pc-item--con .ng-pc-icon { color: #dc2626; }
+
+@media (max-width: 640px) {
+    .ng-proscons-grid { grid-template-columns: 1fr; }
+}
+
+/* ── Known Issues ─────────────────────────────────────────────────────────── */
+.ng-vehicle-issues {
+    padding: 48px 0;
+    background: var(--ng-gray-50);
+    border-top: 1px solid var(--ng-gray-100);
+}
+
+.ng-issues-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.ng-issue-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    padding: 18px 20px;
+    border-left: 4px solid;
+}
+.ng-issue-card--minor    { border-left-color: #ca8a04; }
+.ng-issue-card--moderate { border-left-color: #ea580c; }
+.ng-issue-card--major    { border-left-color: #dc2626; }
+
+.ng-issue-card__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.ng-issue-severity {
+    flex-shrink: 0;
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-top: 2px;
+}
+.ng-issue-card--minor    .ng-issue-severity { background: #fef9c3; color: #854d0e; }
+.ng-issue-card--moderate .ng-issue-severity { background: #ffedd5; color: #9a3412; }
+.ng-issue-card--major    .ng-issue-severity { background: #fee2e2; color: #991b1b; }
+
+.ng-issue-card__title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--ng-text);
+    line-height: 1.4;
+    margin: 0;
+}
+
+.ng-issue-card__desc {
+    font-size: .85rem;
+    color: var(--ng-text-muted);
+    line-height: 1.5;
+    margin: 0 0 10px;
+}
+
+.ng-issue-card__source {
+    font-size: .78rem;
+    color: var(--ng-blue);
+    text-decoration: none;
+}
+.ng-issue-card__source:hover { text-decoration: underline; }
+
+/* ── Competition ──────────────────────────────────────────────────────────── */
+.ng-vehicle-competition {
+    padding: 48px 0;
+    background: var(--ng-white);
+    border-top: 1px solid var(--ng-gray-100);
+}
+
+.ng-competition-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+}
+
+.ng-competition-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: var(--ng-gray-800, #1e293b);
+    border-radius: var(--ng-radius-lg);
+    padding: 20px 16px;
+    text-decoration: none;
+    transition: transform var(--ng-transition), box-shadow var(--ng-transition);
+    box-shadow: var(--ng-shadow);
+}
+.ng-competition-card:hover { transform: translateY(-3px); box-shadow: var(--ng-shadow-md); }
+
+.ng-competition-card__img {
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+.ng-competition-card__img img {
+    max-height: 36px;
+    max-width: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+    opacity: .8;
+}
+
+.ng-competition-card__brand {
+    font-size: .7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: rgba(255,255,255,.5);
+    margin-bottom: 4px;
+}
+.ng-competition-card__name {
+    font-size: .95rem;
+    font-weight: 700;
+    color: var(--ng-white);
+    margin-bottom: 6px;
+}
+.ng-competition-card__type {
+    font-size: .72rem;
+    color: rgba(255,255,255,.45);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+/* ── Brochure CTA ─────────────────────────────────────────────────────────── */
+.ng-vehicle-brochure {
+    padding: 32px 0;
+    background: var(--ng-gray-50);
+    border-top: 1px solid var(--ng-gray-100);
+    border-bottom: 1px solid var(--ng-gray-100);
+}
+
+.ng-brochure-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.ng-brochure-cta strong {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--ng-text);
+    margin-bottom: 4px;
+}
+.ng-brochure-cta p {
+    font-size: .875rem;
+    color: var(--ng-text-muted);
+    margin: 0;
+}
+
+/* ── Shared empty state ───────────────────────────────────────────────────── */
+.ng-section-empty {
+    color: var(--ng-text-muted);
+    font-size: .9rem;
+    padding: 20px 0;
+    font-style: italic;
+}

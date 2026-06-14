@@ -131,12 +131,6 @@
         tab.addEventListener('click', function () { switchTab(tab.dataset.tab); });
     });
 
-    document.querySelectorAll('[data-tab]').forEach(function (el) {
-        if (el.tagName === 'BUTTON' && !el.classList.contains('ng-modal__tab') && !el.classList.contains('ng-auth-trigger')) {
-            el.addEventListener('click', function () { switchTab(el.dataset.tab); });
-        }
-    });
-
     // ── Sign in ───────────────────────────────────────────────────────────────
 
     if (signinForm) {

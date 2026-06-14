@@ -1,15 +1,20 @@
 <?php
 get_header();
 
-// Fetch data from Supabase for dynamic homepage sections
+// ── Data ──────────────────────────────────────────────────────────────────────
+
 $brands_cars  = ngt_supabase_get( 'brands', [ 'select' => 'id,name,slug,logo_url,type', 'type' => 'eq.car',  'order' => 'name.asc' ] );
 $brands_bikes = ngt_supabase_get( 'brands', [ 'select' => 'id,name,slug,logo_url,type', 'type' => 'eq.bike', 'order' => 'name.asc' ] );
-$brands       = array_merge( $brands_cars, $brands_bikes ); // keep $brands for fallback
+
+// Fixed join syntax + prices (was broken: used model(...) instead of models!inner(...))
 $variants = ngt_supabase_get( 'variants', [
-    'select'              => 'id,name,slug,model(name,body_type,brand(name,slug))',
-    'is_available_nepal'  => 'eq.true',
-    'limit'               => '6',
+    'select'             => 'id,name,slug,starting_price_npr,year_from,model_id,models!inner(id,name,slug,body_type,is_ev,brands!inner(name,slug,logo_url))',
+    'is_available_nepal' => 'eq.true',
+    'order'              => 'year_from.desc,name.asc',
+    'limit'              => '8',
 ] );
+$home_price_rows = ngt_prices_for_variants( array_column( $variants, 'id' ) );
+
 $comparisons = ngt_supabase_get( 'comparisons', [
     'select'    => 'id,slug,title,created_at',
     'published' => 'eq.true',
@@ -20,99 +25,45 @@ $comparisons = ngt_supabase_get( 'comparisons', [
 
 <!-- ── HERO ──────────────────────────────────────────────────────────────────── -->
 <section class="ng-hero">
+    <div class="ng-hero__bg" data-parallax="0.18" aria-hidden="true"></div>
+    <div class="ng-hero__shape" data-parallax="0.35" aria-hidden="true"></div>
     <div class="ng-container">
         <div class="ng-hero__content">
-            <h1 class="ng-hero__title">
-                Nepal's Smartest<br>Vehicle Platform
-            </h1>
-            <p class="ng-hero__subtitle">Compare specs, estimate on-road prices, track ownership costs — all in one place. Built for Nepal's roads, Nepal's market.</p>
+            <p class="ng-hero__eyebrow">Nepal-first vehicle intelligence platform</p>
+            <h1 class="ng-hero__title">Research Better.<br>Buy Smarter.</h1>
+            <p class="ng-hero__subtitle">Compare cars, audit specs, check Nepal on-road pricing, and understand ownership tradeoffs before you shortlist anything.</p>
+
             <div class="ng-hero__ctas">
-                <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-btn ng-btn--red ng-btn--lg">
-                    Compare Cars
-                </a>
-                <a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-btn ng-btn--outline-white ng-btn--lg">
-                    Price a Car in Nepal
-                </a>
+                <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-btn ng-btn--red ng-btn--lg">Compare Cars</a>
+                <a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-btn ng-btn--outline ng-btn--lg">Estimate Nepal Price</a>
             </div>
+
+            <div class="ng-hero__filters">
+                <div class="ng-hero__filter-group">
+                    <p class="ng-hero__filter-label">Browse by vehicle type</p>
+                    <div class="ng-hero__type-row">
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#type=car' ) ); ?>" class="ng-hero__search-btn">Cars &amp; SUVs</a>
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#type=bike' ) ); ?>" class="ng-hero__search-btn">Motorcycles &amp; Bikes</a>
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#fuel=ev' ) ); ?>" class="ng-hero__search-btn">Electric Vehicles</a>
+                    </div>
+                </div>
+                <div class="ng-hero__filter-group">
+                    <p class="ng-hero__filter-label">Browse by budget (NPR)</p>
+                    <div class="ng-hero__budget-row">
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=under-5l' ) ); ?>" class="ng-hero__search-btn">Under 5 Lakh</a>
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=5l-15l' ) ); ?>" class="ng-hero__search-btn">5L &ndash; 15L</a>
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=15l-50l' ) ); ?>" class="ng-hero__search-btn">15L &ndash; 50L</a>
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=50l-1cr' ) ); ?>" class="ng-hero__search-btn">50L &ndash; 1 Crore</a>
+                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=above-1cr' ) ); ?>" class="ng-hero__search-btn">Above 1 Crore</a>
+                    </div>
+                </div>
+            </div>
+
             <div class="ng-hero__trust">
-                <span>✓ Source-backed data where available</span>
-                <span>✓ Nepal customs &amp; tax included</span>
-                <span>✓ Specs expanding by model</span>
+                <span>88+ models tracked</span>
+                <span>NPR on-road prices</span>
+                <span>Nepal customs &amp; tax included</span>
             </div>
-        </div>
-    </div>
-</section>
-
-<!-- ── QUICK TILES ────────────────────────────────────────────────────────────── -->
-<section class="ng-section ng-section--tiles">
-    <div class="ng-container">
-        <div class="ng-tiles">
-
-            <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-tile">
-                <div class="ng-tile__icon">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="4" y="14" width="18" height="22" rx="3" stroke="currentColor" stroke-width="2.5"/>
-                        <rect x="26" y="14" width="18" height="22" rx="3" stroke="currentColor" stroke-width="2.5"/>
-                        <path d="M22 24h4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <span class="ng-tile__label">Compare Cars</span>
-            </a>
-
-            <a href="<?php echo esc_url( home_url( '/electric-vehicles/' ) ); ?>" class="ng-tile">
-                <div class="ng-tile__icon ng-tile__icon--ev">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M26 8L14 26h12l-2 14L38 22H26L28 8z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
-                    </svg>
-                </div>
-                <span class="ng-tile__label">Electric Vehicles</span>
-            </a>
-
-            <a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-tile">
-                <div class="ng-tile__icon">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect x="8" y="8" width="32" height="32" rx="4" stroke="currentColor" stroke-width="2.5"/>
-                        <path d="M16 24h16M24 16v16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M19 19l10 10M29 19L19 29" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".4"/>
-                    </svg>
-                </div>
-                <span class="ng-tile__label">Price Estimator</span>
-            </a>
-
-            <a href="<?php echo esc_url( home_url( '/cars/' ) ); ?>" class="ng-tile">
-                <div class="ng-tile__icon">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 32V20l6-8h20l6 8v12" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
-                        <circle cx="16" cy="33" r="4" stroke="currentColor" stroke-width="2.5"/>
-                        <circle cx="32" cy="33" r="4" stroke="currentColor" stroke-width="2.5"/>
-                        <path d="M20 33h8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-                        <path d="M14 20h20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <span class="ng-tile__label">All Cars</span>
-            </a>
-
-            <a href="<?php echo esc_url( home_url( '/about/' ) ); ?>" class="ng-tile">
-                <div class="ng-tile__icon">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M8 40V20L24 10l16 10v20H8z" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
-                        <rect x="18" y="28" width="12" height="12" rx="1" stroke="currentColor" stroke-width="2.5"/>
-                        <path d="M8 20h32" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".4"/>
-                    </svg>
-                </div>
-                <span class="ng-tile__label">About Us</span>
-            </a>
-
-            <a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="ng-tile ng-tile--cta">
-                <div class="ng-tile__icon">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="24" cy="16" r="8" stroke="currentColor" stroke-width="2.5"/>
-                        <path d="M8 40c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-                    </svg>
-                </div>
-                <span class="ng-tile__label">My Garage</span>
-            </a>
-
         </div>
     </div>
 </section>
@@ -122,45 +73,117 @@ $comparisons = ngt_supabase_get( 'comparisons', [
 <section class="ng-section">
     <div class="ng-container">
         <div class="ng-section__header">
-            <h2>Vehicles Available in Nepal</h2>
-            <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-link--more">See all →</a>
+            <h2 data-animate>Latest Models in Nepal</h2>
+            <a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>" class="ng-link--more">See all →</a>
         </div>
         <div class="ng-cards ng-cards--scroll">
             <?php foreach ( $variants as $v ) :
-                $model_name = $v['model']['name'] ?? '';
-                $brand_name = $v['model']['brand']['name'] ?? '';
-                $body_type  = $v['model']['body_type'] ?? '';
-                $slug       = $v['slug'] ?? '';
+                $model      = $v['models'] ?? [];
+                $brand      = $model['brands'] ?? [];
+                $brand_slug = $brand['slug'] ?? '';
+                $model_slug = $model['slug'] ?? '';
+                $logo_url   = $brand['logo_url'] ?? '';
+                $brand_name = $brand['name'] ?? '';
+                $model_name = $model['name'] ?? '';
+                $body_type  = $model['body_type'] ?? '';
+                $is_ev      = ! empty( $model['is_ev'] );
+                $href       = ( $brand_slug && $model_slug )
+                              ? home_url( '/cars/' . $brand_slug . '/' . $model_slug . '/' )
+                              : home_url( '/new-cars/' );
+                $price      = ngt_variant_price_display( $v, $home_price_rows );
             ?>
-            <article class="ng-vehicle-card">
-                <div class="ng-vehicle-card__img">
-                    <div class="ng-vehicle-card__placeholder">
-                        <svg viewBox="0 0 80 48" fill="none"><path d="M12 34V24l8-12h40l8 12v10" stroke="#CBD5E1" stroke-width="2" stroke-linejoin="round"/><circle cx="22" cy="35" r="5" stroke="#CBD5E1" stroke-width="2"/><circle cx="58" cy="35" r="5" stroke="#CBD5E1" stroke-width="2"/></svg>
-                    </div>
-                    <?php if ( $body_type ) : ?>
-                        <span class="ng-vehicle-card__badge"><?php echo esc_html( ucfirst( $body_type ) ); ?></span>
+            <a class="ng-vehicle-card" href="<?php echo esc_url( $href ); ?>">
+                <div class="ng-vehicle-card__img ng-vehicle-card__logo-bg">
+                    <?php if ( $logo_url ) : ?>
+                        <img src="<?php echo esc_url( $logo_url ); ?>"
+                             alt="<?php echo esc_attr( $brand_name ); ?>"
+                             class="ng-brand-logo-filter"
+                             style="max-height:60px;max-width:120px;object-fit:contain;" loading="lazy">
+                    <?php else : ?>
+                        <span class="ng-vehicle-card__logo-fallback"><?php echo esc_html( $brand_name ); ?></span>
                     <?php endif; ?>
                 </div>
                 <div class="ng-vehicle-card__body">
-                    <p class="ng-vehicle-card__brand"><?php echo esc_html( $brand_name ); ?></p>
-                    <h3 class="ng-vehicle-card__name"><?php echo esc_html( $model_name . ' ' . $v['name'] ); ?></h3>
-                    <div class="ng-vehicle-card__actions">
-                        <a href="<?php echo esc_url( home_url( '/compare/?v=' . urlencode( $slug ) ) ); ?>" class="ng-btn ng-btn--sm ng-btn--primary">Compare</a>
+                    <div class="ng-vehicle-card__badges">
+                        <?php if ( $body_type ) : ?>
+                            <span class="ng-vehicle-card__badge"><?php echo esc_html( ucfirst( $body_type ) ); ?></span>
+                        <?php endif; ?>
+                        <?php if ( $is_ev ) : ?>
+                            <span class="ng-vehicle-card__badge ng-badge--ev">EV</span>
+                        <?php endif; ?>
                     </div>
+                    <p class="ng-vehicle-card__brand"><?php echo esc_html( $brand_name ); ?></p>
+                    <h3 class="ng-vehicle-card__name"><?php echo esc_html( $model_name ); ?></h3>
+                    <p class="ng-vehicle-card__price"><?php echo esc_html( $price['label'] ); ?></p>
+                    <div class="ng-card-price-meta"><?php echo wp_kses_post( ngt_price_badge_html( $price ) ); ?></div>
                 </div>
-            </article>
+            </a>
             <?php endforeach; ?>
         </div>
     </div>
 </section>
 <?php endif; ?>
 
-<!-- ── BROWSE BY BRAND ────────────────────────────────────────────────────────── -->
-<?php if ( ! empty( $brands_cars ) || ! empty( $brands_bikes ) ) : ?>
+<!-- ── LATEST COMPARISONS (signature feature — elevated) ──────────────────────── -->
+<?php if ( ! empty( $comparisons ) ) : ?>
 <section class="ng-section ng-section--gray">
     <div class="ng-container">
+        <p class="ng-section__label">Comparison Engine</p>
+        <div class="ng-section__header ng-section__header--stack">
+            <div class="ng-section__header-left">
+                <h2 data-animate>Latest Comparisons</h2>
+                <p class="ng-section__intro">Side-by-side specs, on-road pricing, and Nepal-specific context — so you can decide with confidence.</p>
+            </div>
+            <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-link--more">All comparisons →</a>
+        </div>
+        <div class="ng-cards ng-cards--3col">
+            <?php foreach ( $comparisons as $comp ) :
+                $date = ! empty( $comp['created_at'] ) ? date( 'M Y', strtotime( $comp['created_at'] ) ) : '';
+            ?>
+            <a href="<?php echo esc_url( home_url( '/compare/' . sanitize_title( $comp['slug'] ) . '/' ) ); ?>" class="ng-compare-card">
+                <div class="ng-compare-card__tag">Head-to-Head</div>
+                <h3 class="ng-compare-card__title"><?php echo esc_html( $comp['title'] ); ?></h3>
+                <?php if ( $date ) : ?>
+                    <p class="ng-compare-card__date"><?php echo esc_html( $date ); ?></p>
+                <?php endif; ?>
+                <span class="ng-compare-card__cta">Read comparison →</span>
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <div class="ng-compare-section-footer">
+            <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-btn ng-btn--outline">Build your own comparison →</a>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- ── TRUST STRIP ────────────────────────────────────────────────────────────── -->
+<section class="ng-trust-strip">
+    <div class="ng-trust-strip__bg" data-parallax="0.15" aria-hidden="true"></div>
+    <div class="ng-container">
+        <div class="ng-trust-strip__grid">
+            <div class="ng-trust-strip__item" data-animate data-animate-delay="0">
+                <span class="ng-trust-strip__number">88+</span>
+                <span class="ng-trust-strip__label">Cars &amp; bikes tracked with Nepal availability status</span>
+            </div>
+            <div class="ng-trust-strip__item" data-animate data-animate-delay="150">
+                <span class="ng-trust-strip__number">On-Road</span>
+                <span class="ng-trust-strip__label">Prices built with Nepal customs, VAT &amp; road tax</span>
+            </div>
+            <div class="ng-trust-strip__item" data-animate data-animate-delay="300">
+                <span class="ng-trust-strip__number">Free</span>
+                <span class="ng-trust-strip__label">Side-by-side comparison — no account needed</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── BROWSE BY BRAND ────────────────────────────────────────────────────────── -->
+<?php if ( ! empty( $brands_cars ) || ! empty( $brands_bikes ) ) : ?>
+<section class="ng-section">
+    <div class="ng-container">
         <div class="ng-section__header">
-            <h2>Browse by Brand</h2>
+            <h2 data-animate>Browse by Brand</h2>
         </div>
 
         <?php if ( ! empty( $brands_cars ) ) : ?>
@@ -190,7 +213,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
         <?php endif; ?>
 
         <?php if ( ! empty( $brands_bikes ) ) : ?>
-        <p class="ng-brand-type-label" style="margin-top:24px">Bikes &amp; Scooters</p>
+        <p class="ng-brand-type-label ng-brand-type-label--gap">Bikes &amp; Scooters</p>
         <div class="ng-brand-marquee ng-brand-marquee--reverse" aria-label="Browse bike brands">
             <div class="ng-brand-track">
                 <?php foreach ( $brands_bikes as $brand ) : ?>
@@ -202,7 +225,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
                     <?php endif; ?>
                 </a>
                 <?php endforeach; ?>
-                <?php foreach ( $brands_bikes as $brand ) : ?>
+                <?php foreach ( $brands_bikes as $brand ) : // duplicate for seamless loop ?>
                 <a href="<?php echo esc_url( home_url( '/bikes/' . ( $brand['slug'] ?? sanitize_title( $brand['name'] ) ) . '/' ) ); ?>" class="ng-brand-tile" aria-hidden="true" tabindex="-1">
                     <?php if ( ! empty( $brand['logo_url'] ) ) : ?>
                         <img src="<?php echo esc_url( $brand['logo_url'] ); ?>" alt="" loading="lazy">
@@ -223,53 +246,30 @@ $comparisons = ngt_supabase_get( 'comparisons', [
 </section>
 <?php endif; ?>
 
-<!-- ── LATEST COMPARISONS ─────────────────────────────────────────────────────── -->
-<?php if ( ! empty( $comparisons ) ) : ?>
-<section class="ng-section">
-    <div class="ng-container">
-        <div class="ng-section__header">
-            <h2>Latest Comparisons</h2>
-            <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-link--more">All comparisons →</a>
-        </div>
-        <div class="ng-cards ng-cards--3col">
-            <?php foreach ( $comparisons as $comp ) :
-                $date = ! empty( $comp['created_at'] ) ? date( 'M Y', strtotime( $comp['created_at'] ) ) : '';
-            ?>
-            <a href="<?php echo esc_url( home_url( '/compare/' . sanitize_title( $comp['slug'] ) . '/' ) ); ?>" class="ng-compare-card">
-                <div class="ng-compare-card__tag">Comparison</div>
-                <h3 class="ng-compare-card__title"><?php echo esc_html( $comp['title'] ); ?></h3>
-                <?php if ( $date ) : ?>
-                    <p class="ng-compare-card__date"><?php echo esc_html( $date ); ?></p>
-                <?php endif; ?>
-            </a>
-            <?php endforeach; ?>
-        </div>
-    </div>
-</section>
-<?php endif; ?>
-
-<!-- ── BROWSE BY BODY TYPE ────────────────────────────────────────────────────── -->
+<!-- ── BROWSE BY TYPE ────────────────────────────────────────────────────────── -->
 <section class="ng-section ng-section--gray">
     <div class="ng-container">
         <div class="ng-section__header">
-            <h2>Browse by Type</h2>
+            <h2 data-animate>Browse by Type</h2>
         </div>
         <div class="ng-type-grid">
             <?php
             $types = [
-                [ 'label' => 'SUV',      'slug' => 'suv',       'icon' => 'M6 30V20l8-10h32l8 10v10H6z' ],
-                [ 'label' => 'Sedan',    'slug' => 'sedan',     'icon' => 'M8 30V22l6-8h32l6 8v8H8z M14 22h32' ],
-                [ 'label' => 'Hatchback','slug' => 'hatchback', 'icon' => 'M10 30V22l8-8h24l8 8v8H10z' ],
-                [ 'label' => 'Electric', 'slug' => 'ev',        'icon' => 'M26 6L14 26h12l-4 16L42 22H28L30 6z' ],
-                [ 'label' => 'Pickup',   'slug' => 'pickup',    'icon' => 'M4 32V22l8-10h18v20H4z M30 32V28h14v4H30z' ],
-                [ 'label' => 'Minivan',  'slug' => 'minivan',   'icon' => 'M4 32V18l6-8h34l4 8v14H4z M4 22h44' ],
+                [ 'label' => 'SUV',        'href' => '/new-cars/#type=car',  'icon' => 'M6 30V20l8-10h32l8 10v10H6z',          'wheels' => true ],
+                [ 'label' => 'Sedan',      'href' => '/new-cars/#type=car',  'icon' => 'M8 30V22l6-8h32l6 8v8H8z M14 22h32',   'wheels' => true ],
+                [ 'label' => 'Hatchback',  'href' => '/new-cars/#type=car',  'icon' => 'M10 30V22l8-8h24l8 8v8H10z',           'wheels' => true ],
+                [ 'label' => 'Electric',   'href' => '/new-cars/#fuel=ev',   'icon' => 'M26 6L14 26h12l-4 16L42 22H28L30 6z',  'wheels' => false ],
+                [ 'label' => 'Pickup',     'href' => '/new-cars/#type=car',  'icon' => 'M4 32V22l8-10h18v20H4z M30 32V28h14v4H30z', 'wheels' => true ],
+                [ 'label' => 'Motorcycle', 'href' => '/new-cars/#type=bike', 'icon' => 'M20 24l4-8h6l6 8 M10 32a6 6 0 1012 0 6 6 0 00-12 0z M32 32a6 6 0 1012 0 6 6 0 00-12 0z M16 32h16', 'wheels' => false ],
             ];
             foreach ( $types as $type ) : ?>
-            <a href="<?php echo esc_url( home_url( '/new-cars/?type=' . $type['slug'] ) ); ?>" class="ng-type-tile">
+            <a href="<?php echo esc_url( home_url( $type['href'] ) ); ?>" class="ng-type-tile">
                 <svg viewBox="0 0 54 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="<?php echo esc_attr( $type['icon'] ); ?>" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+                    <?php if ( $type['wheels'] ) : ?>
                     <circle cx="16" cy="33" r="4" stroke="currentColor" stroke-width="2.5"/>
                     <circle cx="38" cy="33" r="4" stroke="currentColor" stroke-width="2.5"/>
+                    <?php endif; ?>
                 </svg>
                 <span><?php echo esc_html( $type['label'] ); ?></span>
             </a>
@@ -278,27 +278,7 @@ $comparisons = ngt_supabase_get( 'comparisons', [
     </div>
 </section>
 
-<!-- ── TRUST STRIP ────────────────────────────────────────────────────────────── -->
-<section class="ng-trust-strip">
-    <div class="ng-container">
-        <div class="ng-trust-strip__grid">
-            <div class="ng-trust-strip__item">
-                <span class="ng-trust-strip__number">122</span>
-                <span class="ng-trust-strip__label">Spec fields tracked per vehicle</span>
-            </div>
-            <div class="ng-trust-strip__item">
-                <span class="ng-trust-strip__number">✓</span>
-                <span class="ng-trust-strip__label">Sources and confidence labels expanding</span>
-            </div>
-            <div class="ng-trust-strip__item">
-                <span class="ng-trust-strip__number">NPR</span>
-                <span class="ng-trust-strip__label">On-road prices with Nepal customs &amp; tax included</span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- ── LATEST NEWS ───────────────────────────────────────────────────────────── -->
+<!-- ── LATEST NEWS ────────────────────────────────────────────────────────────── -->
 <?php
 $recent_posts = get_posts( [ 'numberposts' => 3, 'post_status' => 'publish' ] );
 if ( $recent_posts ) : ?>
@@ -330,14 +310,13 @@ if ( $recent_posts ) : ?>
 </section>
 <?php endif; ?>
 
-<!-- ── FAQ ───────────────────────────────────────────────────────────────────── -->
+<!-- ── FAQ ────────────────────────────────────────────────────────────────────── -->
 <section class="ng-section ng-section--gray" itemscope itemtype="https://schema.org/FAQPage">
     <div class="ng-container ng-container--narrow">
         <div class="ng-section__header ng-section__header--center">
             <h2>Frequently Asked Questions</h2>
         </div>
         <div class="ng-faq">
-
             <?php
             $faqs = [
                 [
@@ -372,7 +351,6 @@ if ( $recent_posts ) : ?>
                 </div>
             </div>
             <?php endforeach; ?>
-
         </div>
     </div>
 </section>

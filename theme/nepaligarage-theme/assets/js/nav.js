@@ -62,6 +62,48 @@
         });
     });
 
+    // Shared tab switchers (spec tabs, comparison tabs)
+    document.querySelectorAll('.ng-spec-tabs, .ng-comparison-tab-nav').forEach(function (group) {
+        var buttons = group.querySelectorAll('[data-tab]');
+        if (!buttons.length) return;
+
+        buttons.forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var target = btn.dataset.tab;
+                buttons.forEach(function (other) {
+                    other.classList.toggle('is-active', other === btn);
+                    other.setAttribute('aria-selected', other === btn ? 'true' : 'false');
+                });
+
+                document.querySelectorAll('[data-tab-panel="' + target + '"]').forEach(function (panel) {
+                    panel.classList.add('is-active');
+                });
+
+                var allPanels = document.querySelectorAll(group.classList.contains('ng-spec-tabs') ? '.ng-spec-category' : '.ng-comparison-panel');
+                allPanels.forEach(function (panel) {
+                    if (panel.dataset.tabPanel !== target) {
+                        panel.classList.remove('is-active');
+                    }
+                });
+            });
+        });
+    });
+
+    // Vehicle gallery thumb -> hero image swap
+    var heroImage = document.getElementById('ng-active-image');
+    document.querySelectorAll('.ng-gallery-thumb img').forEach(function (img) {
+        img.addEventListener('click', function () {
+            if (!heroImage) return;
+            heroImage.src = img.currentSrc || img.src;
+            heroImage.alt = img.alt || heroImage.alt;
+            document.querySelectorAll('.ng-gallery-thumb').forEach(function (thumb) {
+                thumb.classList.remove('is-active');
+            });
+            var thumbWrap = img.closest('.ng-gallery-thumb');
+            if (thumbWrap) thumbWrap.classList.add('is-active');
+        });
+    });
+
     // ── Cookie consent (one-time) ─────────────────────────────────────────────
     var cookieBar     = document.getElementById('ng-cookie-bar');
     var cookieAccept  = document.getElementById('ng-cookie-accept');
@@ -173,3 +215,70 @@
     })();
 
 })();
+
+// ── Header scroll-aware class ────────────────────────────────────────────────
+
+(function () {
+    var header = document.getElementById('ng-header');
+    if (!header) return;
+    window.addEventListener('scroll', function () {
+        header.classList.toggle('ng-header--scrolled', window.scrollY > 10);
+    }, { passive: true });
+}());
+
+// ── Parallax engine ──────────────────────────────────────────────────────────
+
+(function () {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var parallaxEls = document.querySelectorAll('[data-parallax]');
+    if (!parallaxEls.length) return;
+
+    var ticking = false;
+
+    function updateParallax() {
+        parallaxEls.forEach(function (el) {
+            var speed = parseFloat(el.dataset.parallax) || 0.3;
+            var rect  = el.getBoundingClientRect();
+            var mid   = rect.top + rect.height / 2;
+            var delta = (window.innerHeight / 2 - mid) * speed;
+            el.style.transform = 'translateY(' + delta + 'px)';
+        });
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function () {
+        if (!ticking) {
+            requestAnimationFrame(updateParallax);
+            ticking = true;
+        }
+    }, { passive: true });
+
+    updateParallax();
+}());
+
+// ── Entrance animations (Intersection Observer) ──────────────────────────────
+
+(function () {
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var animEls = document.querySelectorAll('[data-animate]');
+    if (!animEls.length) return;
+
+    if (reduceMotion) {
+        animEls.forEach(function (el) { el.classList.add('ng-is-visible'); });
+        return;
+    }
+
+    var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+                var delay = entry.target.dataset.animateDelay || '0';
+                entry.target.style.transitionDelay = delay + 'ms';
+                entry.target.classList.add('ng-is-visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+
+    animEls.forEach(function (el) { observer.observe(el); });
+}());

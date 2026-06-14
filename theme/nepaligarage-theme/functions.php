@@ -29,7 +29,7 @@ add_action( 'wp_enqueue_scripts', function () {
     // Google Fonts
     wp_enqueue_style(
         'ng-fonts',
-        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500;700&display=swap',
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+Devanagari:wght@400;500;700&family=Syncopate:wght@400;700&display=swap',
         [],
         null
     );
@@ -66,6 +66,11 @@ add_action( 'wp_enqueue_scripts', function () {
     if ( is_page_template( 'page-vehicle.php' ) ) {
         wp_enqueue_style( 'ng-vehicle', NGT_URI . '/assets/css/vehicle.css', [ 'ng-theme' ], NGT_VERSION );
         wp_enqueue_script( 'ng-enquiry', NGT_URI . '/assets/js/enquiry.js', [ 'ng-auth' ], NGT_VERSION, true );
+    }
+
+    // New-cars listing filter
+    if ( is_page( 'new-cars' ) ) {
+        wp_enqueue_script( 'ng-filter', NGT_URI . '/assets/js/filter.js', [], NGT_VERSION, true );
     }
 
     // Pass config to JS — anon key is safe in browser; all data is RLS-protected
@@ -208,6 +213,23 @@ function ngt_price_badge_html( array $price ): string {
     return $html;
 }
 
+/**
+ * Extract a YouTube video ID from common YouTube URL formats.
+ */
+function ngt_extract_youtube_id( string $url ): string {
+    $url = trim( $url );
+    if ( '' === $url ) {
+        return '';
+    }
+
+    $pattern = '%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([A-Za-z0-9_-]{11})%';
+    if ( preg_match( $pattern, $url, $matches ) ) {
+        return $matches[1];
+    }
+
+    return '';
+}
+
 // ── Team dashboard template routing ──────────────────────────────────────────
 
 add_filter( 'template_include', function ( string $template ): string {
@@ -248,6 +270,12 @@ add_filter( 'template_include', function ( string $template ): string {
         'news'                      => 'page-news.php',
         'privacy-policy'            => 'page-privacy-policy.php',
     ];
+
+    // Root URL → homepage template
+    if ( empty( $parts ) ) {
+        $home_tpl = get_template_directory() . '/front-page.php';
+        if ( file_exists( $home_tpl ) ) return $home_tpl;
+    }
 
     if ( isset( $routes[ $slug ] ) && ! isset( $parts[1] ) ) {
         $route_tpl = get_template_directory() . '/' . $routes[ $slug ];
