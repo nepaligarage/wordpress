@@ -1894,3 +1894,186 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
         width: 100%;
     }
 }
+
+/* ── Events ───────────────────────────────────────────────────────────────── */
+
+.ng-events-hero,
+.ng-event-single__hero {
+    background: linear-gradient(135deg, #0f172a, #172554 60%, #1e293b);
+    color: var(--ng-white);
+    border-bottom-color: var(--ng-red);
+}
+
+.ng-events-hero .ng-page-hero__title,
+.ng-event-single__hero .ng-page-hero__title,
+.ng-events-hero .ng-page-hero__eyebrow,
+.ng-event-single__hero .ng-page-hero__eyebrow,
+.ng-events-hero .ng-page-hero__sub {
+    color: var(--ng-white);
+}
+
+.ng-events-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 22px;
+}
+
+.ng-event-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, .05);
+}
+
+.ng-event-card__link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+}
+
+.ng-event-card__link:hover { text-decoration: none; }
+.ng-event-card__media { aspect-ratio: 16 / 10; background: var(--ng-gray-100); }
+.ng-event-card__image { width: 100%; height: 100%; object-fit: cover; }
+.ng-event-card__placeholder {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: var(--ng-text-muted);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.ng-event-card__body { padding: 22px; }
+.ng-event-card__badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(220, 38, 38, .08);
+    color: var(--ng-red);
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.ng-event-card__badge--past {
+    background: rgba(15, 23, 42, .08);
+    color: var(--ng-text-muted);
+}
+
+.ng-event-card__title {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+}
+
+.ng-event-card__meta,
+.ng-event-card__venue,
+.ng-event-card__excerpt,
+.ng-event-sidebar-card p {
+    color: var(--ng-text-muted);
+    line-height: 1.7;
+}
+
+.ng-event-card__venue { margin-bottom: 8px; }
+.ng-event-card--past .ng-event-card__body { min-height: 220px; }
+
+.ng-event-single__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(280px, .8fr);
+    gap: 28px;
+    align-items: start;
+}
+
+.ng-event-single__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    color: rgba(255,255,255,.78);
+}
+
+.ng-event-single__meta span {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+}
+
+.ng-event-single__cover {
+    border-radius: 24px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 42px rgba(15, 23, 42, .12);
+}
+
+.ng-event-single__cover img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.ng-event-single__content,
+.ng-event-sidebar-card {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: 22px;
+    padding: 24px;
+    box-shadow: 0 16px 32px rgba(15, 23, 42, .05);
+}
+
+.ng-event-sidebar-card + .ng-event-sidebar-card { margin-top: 18px; }
+.ng-event-sidebar-card__list { margin: 0; }
+.ng-event-sidebar-card__list div + div { margin-top: 12px; }
+.ng-event-sidebar-card__list dt {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--ng-text-muted);
+    margin-bottom: 4px;
+}
+
+.ng-event-sidebar-card__list dd {
+    margin: 0;
+    color: var(--ng-text);
+}
+
+.ng-event-sidebar-card__cta { margin-top: 18px; width: 100%; justify-content: center; }
+.ng-event-gallery { margin-top: 28px; }
+.ng-event-gallery__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.ng-event-gallery__item {
+    display: block;
+    border-radius: 18px;
+    overflow: hidden;
+    background: var(--ng-white);
+    box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
+}
+
+.ng-event-gallery__item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+@media (max-width: 1100px) {
+    .ng-events-grid,
+    .ng-event-gallery__grid,
+    .ng-event-single__layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .ng-events-grid { grid-template-columns: 1fr; }
+    .ng-event-card__body,
+    .ng-event-single__content,
+    .ng-event-sidebar-card { padding: 20px; }
+}

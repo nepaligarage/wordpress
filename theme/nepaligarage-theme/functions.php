@@ -338,6 +338,152 @@ add_action( 'wp_enqueue_scripts', function () {
     }
 }, 20 );
 
+// ── Events: CPT + admin fields ───────────────────────────────────────────────
+
+add_action( 'init', function () {
+    register_post_type( 'event', [
+        'labels' => [
+            'name'               => __( 'Events', 'nepaligarage' ),
+            'singular_name'      => __( 'Event', 'nepaligarage' ),
+            'add_new'            => __( 'Add Event', 'nepaligarage' ),
+            'add_new_item'       => __( 'Add New Event', 'nepaligarage' ),
+            'edit_item'          => __( 'Edit Event', 'nepaligarage' ),
+            'new_item'           => __( 'New Event', 'nepaligarage' ),
+            'view_item'          => __( 'View Event', 'nepaligarage' ),
+            'search_items'       => __( 'Search Events', 'nepaligarage' ),
+            'not_found'          => __( 'No events found', 'nepaligarage' ),
+            'not_found_in_trash' => __( 'No events found in Trash', 'nepaligarage' ),
+            'menu_name'          => __( 'Events', 'nepaligarage' ),
+        ],
+        'public'       => true,
+        'show_in_rest' => true,
+        'menu_icon'    => 'dashicons-calendar-alt',
+        'has_archive'  => 'events',
+        'rewrite'      => [ 'slug' => 'events', 'with_front' => false ],
+        'supports'     => [ 'title', 'editor', 'excerpt', 'thumbnail', 'revisions' ],
+    ] );
+
+    if ( ! get_option( 'ngt_events_rewrite_flushed' ) ) {
+        flush_rewrite_rules( false );
+        update_option( 'ngt_events_rewrite_flushed', 1, false );
+    }
+} );
+
+function ngt_event_fields(): array {
+    return [
+        'event_date'       => 'Event date',
+        'event_end_date'   => 'End date',
+        'event_venue'      => 'Venue',
+        'event_city'       => 'City',
+        'event_organizer'  => 'Organizer',
+        'event_link'       => 'Registration / external link',
+        'event_gallery'    => 'Gallery image URLs (one per line)',
+    ];
+}
+
+add_action( 'add_meta_boxes', function () {
+    add_meta_box(
+        'ng_event_details',
+        __( 'Event Details', 'nepaligarage' ),
+        function ( WP_Post $post ) {
+            wp_nonce_field( 'ng_save_event_details', 'ng_event_details_nonce' );
+            $values = [];
+            foreach ( ngt_event_fields() as $key => $label ) {
+                $values[ $key ] = get_post_meta( $post->ID, $key, true );
+            }
+            ?>
+            <table class="form-table" role="presentation">
+                <tbody>
+                    <tr>
+                        <th scope="row"><label for="ng-event-date"><?php esc_html_e( 'Event date', 'nepaligarage' ); ?></label></th>
+                        <td><input type="date" id="ng-event-date" name="ng_event_fields[event_date]" value="<?php echo esc_attr( $values['event_date'] ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ng-event-end-date"><?php esc_html_e( 'End date', 'nepaligarage' ); ?></label></th>
+                        <td><input type="date" id="ng-event-end-date" name="ng_event_fields[event_end_date]" value="<?php echo esc_attr( $values['event_end_date'] ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ng-event-venue"><?php esc_html_e( 'Venue', 'nepaligarage' ); ?></label></th>
+                        <td><input type="text" id="ng-event-venue" name="ng_event_fields[event_venue]" value="<?php echo esc_attr( $values['event_venue'] ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ng-event-city"><?php esc_html_e( 'City', 'nepaligarage' ); ?></label></th>
+                        <td><input type="text" id="ng-event-city" name="ng_event_fields[event_city]" value="<?php echo esc_attr( $values['event_city'] ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ng-event-organizer"><?php esc_html_e( 'Organizer', 'nepaligarage' ); ?></label></th>
+                        <td><input type="text" id="ng-event-organizer" name="ng_event_fields[event_organizer]" value="<?php echo esc_attr( $values['event_organizer'] ); ?>" class="regular-text"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ng-event-link"><?php esc_html_e( 'Registration / external link', 'nepaligarage' ); ?></label></th>
+                        <td><input type="url" id="ng-event-link" name="ng_event_fields[event_link]" value="<?php echo esc_attr( $values['event_link'] ); ?>" class="regular-text code"></td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="ng-event-gallery"><?php esc_html_e( 'Gallery image URLs', 'nepaligarage' ); ?></label></th>
+                        <td>
+                            <textarea id="ng-event-gallery" name="ng_event_fields[event_gallery]" rows="5" class="large-text code"><?php echo esc_textarea( $values['event_gallery'] ); ?></textarea>
+                            <p class="description"><?php esc_html_e( 'Paste one image URL per line for additional event photos.', 'nepaligarage' ); ?></p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <?php
+        },
+        'event',
+        'normal',
+        'default'
+    );
+} );
+
+add_action( 'save_post_event', function ( int $post_id ) {
+    if ( ! isset( $_POST['ng_event_details_nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['ng_event_details_nonce'] ) ), 'ng_save_event_details' ) ) {
+        return;
+    }
+    if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
+        return;
+    }
+    if ( ! current_user_can( 'edit_post', $post_id ) ) {
+        return;
+    }
+
+    $raw = isset( $_POST['ng_event_fields'] ) && is_array( $_POST['ng_event_fields'] ) ? wp_unslash( $_POST['ng_event_fields'] ) : [];
+    foreach ( ngt_event_fields() as $key => $label ) {
+        $value = $raw[ $key ] ?? '';
+        switch ( $key ) {
+            case 'event_link':
+                $value = esc_url_raw( $value );
+                break;
+            case 'event_gallery':
+                $lines = array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', (string) $value ) ) );
+                $lines = array_map( 'esc_url_raw', $lines );
+                $value = implode( "\n", array_filter( $lines ) );
+                break;
+            default:
+                $value = sanitize_text_field( $value );
+                break;
+        }
+
+        if ( '' === $value ) {
+            delete_post_meta( $post_id, $key );
+        } else {
+            update_post_meta( $post_id, $key, $value );
+        }
+    }
+} );
+
+function ngt_event_meta( int $post_id, string $key ): string {
+    return (string) get_post_meta( $post_id, $key, true );
+}
+
+function ngt_event_gallery_urls( int $post_id ): array {
+    $raw = ngt_event_meta( $post_id, 'event_gallery' );
+    if ( '' === $raw ) {
+        return [];
+    }
+
+    return array_values( array_filter( array_map( 'trim', preg_split( '/\r\n|\r|\n/', $raw ) ) ) );
+}
+
 // ── Widget areas ──────────────────────────────────────────────────────────────
 
 add_action( 'widgets_init', function () {
