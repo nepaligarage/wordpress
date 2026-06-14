@@ -309,6 +309,22 @@ add_filter( 'redirect_canonical', function ( $redirect_url, $requested_url ) {
     return $redirect_url;
 }, 10, 2 );
 
+add_filter( 'do_redirect_guess_404_permalink', function ( $do_redirect ) {
+    if ( ngt_is_cars_route_request() ) {
+        return false;
+    }
+
+    return $do_redirect;
+} );
+
+add_action( 'template_redirect', function () {
+    if ( ngt_is_cars_route_request() ) {
+        remove_action( 'template_redirect', 'redirect_canonical' );
+        remove_action( 'template_redirect', 'wp_old_slug_redirect' );
+        ngt_mark_current_request_success();
+    }
+}, 0 );
+
 add_filter( 'pre_handle_404', function ( $preempt, $wp_query ) {
     if ( ngt_is_cars_route_request() ) {
         if ( $wp_query instanceof WP_Query ) {
