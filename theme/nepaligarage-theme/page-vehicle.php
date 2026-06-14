@@ -178,8 +178,17 @@ if ( ! empty( $active['image_url'] ) ) {
     $hero_image_url = (string) $gallery_images[0]['url'];
 }
 $brochure_url = ! empty( $model['brochure_url'] ) ? (string) $model['brochure_url'] : '';
-if ( ! $brochure_url && ( $brand['slug'] ?? '' ) === 'byd' && in_array( ( $model['slug'] ?? '' ), [ 'atto-2', 'byd-atto-2' ], true ) ) {
-    $brochure_url = 'https://cimex.com.np/new2.pdf';
+if ( ! $brochure_url && ( $brand['slug'] ?? '' ) === 'byd' ) {
+    $brochure_fallbacks = [
+        'atto-2'       => 'https://cimex.com.np/new2.pdf',
+        'byd-atto-2'   => 'https://cimex.com.np/new2.pdf',
+        'byd-sealion-7'=> 'https://cimex.com.np/new.pdf',
+        'sealion-7'    => 'https://cimex.com.np/new.pdf',
+    ];
+    $model_slug_key = (string) ( $model['slug'] ?? '' );
+    if ( isset( $brochure_fallbacks[ $model_slug_key ] ) ) {
+        $brochure_url = $brochure_fallbacks[ $model_slug_key ];
+    }
 }
 
 $finance_programs = ( $brand && $model ) ? ngt_vehicle_finance_programs( $brand, $model ) : [];
