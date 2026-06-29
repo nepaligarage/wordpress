@@ -28,7 +28,7 @@
                 <h4>Own &amp; Manage</h4>
                 <ul>
                     <li><a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>">My Garage</a></li>
-                    <li><a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>">My Garage</a></li>
+                    <li><a href="<?php echo esc_url( home_url( '/dashboard/#documents' ) ); ?>">Vehicle Documents</a></li>
                     <li><a href="<?php echo esc_url( home_url( '/news/' ) ); ?>">News &amp; Reviews</a></li>
                 </ul>
             </div>
@@ -42,7 +42,7 @@
                     <li><a href="<?php echo esc_url( home_url( '/terms/' ) ); ?>">Terms of Use</a></li>
                 </ul>
                 <div class="ng-footer__contact">
-                    <p>📧 <a href="mailto:hello@nepaligarage.com">hello@nepaligarage.com</a></p>
+                    <p><svg width="14" height="11" viewBox="0 0 14 11" fill="none" aria-hidden="true" style="display:inline-block;vertical-align:middle;margin-right:5px;opacity:.6"><rect x="0" y="0" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.2" fill="none"/><path d="M0 2l7 5 7-5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><a href="mailto:hello@nepaligarage.com">hello@nepaligarage.com</a></p>
                 </div>
             </div>
 

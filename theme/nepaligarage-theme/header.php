@@ -18,13 +18,16 @@
             <span class="ng-logo__text">Nepali<strong>Garage</strong></span>
         </a>
 
+        <?php
+        $ng_req = trim( parse_url( $_SERVER['REQUEST_URI'], PHP_URL_PATH ), '/' );
+        ?>
         <nav class="ng-nav" aria-label="Primary navigation">
             <ul class="ng-nav__list" id="ng-nav-list">
-                <li><a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-nav__link">Compare Cars</a></li>
-                <li><a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>" class="ng-nav__link">New Cars</a></li>
-                <li><a href="<?php echo esc_url( home_url( '/electric-vehicles/' ) ); ?>" class="ng-nav__link ng-nav__link--ev">⚡ Electric</a></li>
-                <li><a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-nav__link">Price Estimator</a></li>
-                <li><a href="<?php echo esc_url( home_url( '/news/' ) ); ?>" class="ng-nav__link">News</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-nav__link<?php echo ( strpos( $ng_req, 'compare' ) === 0 ) ? ' ng-nav__link--active' : ''; ?>"<?php echo ( strpos( $ng_req, 'compare' ) === 0 ) ? ' aria-current="page"' : ''; ?>>Compare Cars</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>" class="ng-nav__link<?php echo ( strpos( $ng_req, 'new-cars' ) === 0 || strpos( $ng_req, 'cars/' ) === 0 ) ? ' ng-nav__link--active' : ''; ?>"<?php echo ( strpos( $ng_req, 'new-cars' ) === 0 || strpos( $ng_req, 'cars/' ) === 0 ) ? ' aria-current="page"' : ''; ?>>New Cars</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/electric-vehicles/' ) ); ?>" class="ng-nav__link ng-nav__link--ev<?php echo ( strpos( $ng_req, 'electric-vehicles' ) === 0 ) ? ' ng-nav__link--active' : ''; ?>"<?php echo ( strpos( $ng_req, 'electric-vehicles' ) === 0 ) ? ' aria-current="page"' : ''; ?>><svg width="11" height="14" viewBox="0 0 11 14" fill="none" aria-hidden="true" focusable="false"><path d="M6.5 1L1 7.5h4.5L4 13 10 6.5H5.5L6.5 1z" fill="currentColor"/></svg> Electric</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-nav__link<?php echo ( strpos( $ng_req, 'nepal-car-price-estimator' ) === 0 ) ? ' ng-nav__link--active' : ''; ?>"<?php echo ( strpos( $ng_req, 'nepal-car-price-estimator' ) === 0 ) ? ' aria-current="page"' : ''; ?>>Price Estimator</a></li>
+                <li><a href="<?php echo esc_url( home_url( '/news/' ) ); ?>" class="ng-nav__link<?php echo ( strpos( $ng_req, 'news' ) === 0 || is_single() ) ? ' ng-nav__link--active' : ''; ?>"<?php echo ( strpos( $ng_req, 'news' ) === 0 || is_single() ) ? ' aria-current="page"' : ''; ?>>News</a></li>
             </ul>
         </nav>
 
@@ -59,6 +62,11 @@
 <div class="ng-modal-overlay" id="ng-auth-overlay" aria-hidden="true">
     <div class="ng-modal" role="dialog" aria-modal="true" aria-labelledby="ng-modal-title">
         <button class="ng-modal__close" id="ng-modal-close" aria-label="Close">&times;</button>
+
+        <div class="ng-modal__brand" aria-hidden="true">
+            <span class="ng-logo__mark">NG</span>
+            <span class="ng-modal__brand-name">Nepali<strong>Garage</strong></span>
+        </div>
 
         <div class="ng-modal__tabs">
             <button class="ng-modal__tab ng-modal__tab--active" data-tab="signin">Sign In</button>

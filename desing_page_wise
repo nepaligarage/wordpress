@@ -1,0 +1,610 @@
+ I inspected your WordPress theme, and the core frontend pages are here:
+
+    - theme/nepaligarage-theme/header.php
+    - theme/nepaligarage-theme/footer.php
+    - theme/nepaligarage-theme/front-page.php
+    - theme/nepaligarage-theme/page-new-cars.php
+    - theme/nepaligarage-theme/page-vehicle.php
+    - theme/nepaligarage-theme/page-compare.php
+    - theme/nepaligarage-theme/page-comparison-detail.php
+    - theme/nepaligarage-theme/page-price-estimator.php
+    - theme/nepaligarage-theme/page-news.php
+    - theme/nepaligarage-theme/single.php
+    - theme/nepaligarage-theme/page-about.php
+    - theme/nepaligarage-theme/page-contact.php
+    - theme/nepaligarage-theme/page-dashboard.php
+    - theme/nepaligarage-theme/page-brand.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/assets/css/vehicle.css
+    - theme/nepaligarage-theme/assets/css/dashboard.css
+    - plugin/templates/comparison-table.php
+    - plugin/includes/class-price-estimator.php
+
+    My recommendation: do this one page at a time in Claude Code, commit each win, then push.
+
+    Design direction that will make NepaliGarage stand out:
+    - not a generic dealership site
+    - not a generic tech startup SaaS look
+    - should feel like “Nepal’s premium vehicle intelligence platform”
+    - editorial trust + market data clarity + automotive energy
+    - dark structural shell, sharp type, restrained red accent, strong Nepal relevance
+    - focus on trust, comparison clarity, pricing transparency, and ownership utility
+
+    Use this order:
+    1. global shell
+    2. homepage
+    3. listing page
+    4. vehicle detail
+    5. comparison pages
+    6. price estimator
+    7. news/content
+    8. about/contact
+    9. dashboard
+
+    Paste these prompts one by one into Claude Code.
+
+    1) Global shell prompt
+
+    text
+    You are working inside a custom WordPress theme for NepaliGarage.
+
+    Project context:
+    - Theme path: theme/nepaligarage-theme
+    - Core shell files: header.php, footer.php, assets/css/theme.css, assets/js/nav.js, assets/js/auth.js
+    - This site deploys by pushing to GitHub, then cPanel pulls it live
+    - Do not break PHP logic, auth hooks, existing routes, or Supabase integrations
+    - Keep the current class naming style with ng-* classes unless there is a very strong reason to improve structure
+    - Do not touch backend business logic unless needed for markup hooks
+    - Do not add heavy dependencies
+    - Make the result production-ready, responsive, and clean
+
+    Design goal:
+    NepaliGarage should feel like Nepal’s most premium vehicle research and ownership platform, not a dealership template and not a bland SaaS dashboard. The visual language should communicate trust, authority, precision, and Nepal-specific market intelligence. Think editorial confidence plus automotive sharpness.
+
+    Your tasks:
+    1. Audit header.php, footer.php, assets/css/theme.css, assets/js/nav.js, and assets/js/auth.js.
+    2. Redesign the global shell:
+       - make header more premium and better spaced
+       - improve active/hover states
+       - make navigation feel more intentional
+       - make login/register modal look first-class, not generic
+       - make footer feel more editorial and trustworthy
+    3. Clean obvious content issues if found, for example duplicated links or weak hierarchy.
+    4. Improve global typography scale, spacing rhythm, button system, surface system, and section spacing.
+    5. Keep the dark structural shell and red accent, but make the palette more refined and less template-like.
+    6. Improve mobile navigation and overall responsive behavior.
+    7. Avoid glassmorphism, gradient text, and gimmicky SaaS patterns.
+    8. Keep performance in mind. No unnecessary JS.
+
+    Deliverables:
+    - edit the files directly
+    - explain the design direction in 5 to 8 bullets
+    - list changed files
+    - include a short QA checklist for responsive and accessibility review
+
+
+    2) Homepage prompt
+
+    text
+    Work on the NepaliGarage homepage.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/front-page.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/header.php
+    - theme/nepaligarage-theme/footer.php
+
+    Important homepage content already exists:
+    - hero with vehicle type and budget shortcuts
+    - featured vehicles
+    - latest comparisons
+    - browse by brand
+    - browse by type
+    - trust strip
+
+    Goal:
+    Turn this into a standout homepage for a Nepal-first vehicle intelligence platform. It should feel premium, useful, and memorable. I want stronger visual hierarchy, clearer reasons to trust the platform, and better section choreography. The homepage should immediately communicate:
+    - compare vehicles
+    - understand Nepal pricing
+    - browse researched models
+    - make better buying decisions
+
+    Instructions:
+    1. Keep the existing data flow and PHP queries intact.
+    2. Redesign the homepage structure and styling without changing the business logic.
+    3. Upgrade the hero so it feels bold and differentiated:
+       - stronger headline hierarchy
+       - better supporting copy
+       - cleaner search/filter shortcut presentation
+       - more premium CTA layout
+    4. Make the “Latest Comparisons” section feel like a signature feature, not just another card grid.
+    5. Improve featured vehicle cards so they feel more curated and less generic.
+    6. Make “Browse by Brand” and “Browse by Type” visually richer and easier to scan.
+    7. Add trust-building content design patterns using existing facts like Nepal prices, sourced specs, customs/tax context, and coverage breadth.
+    8. Keep the design clean and premium, not loud.
+    9. Make sure mobile layout feels intentional, not just stacked desktop blocks.
+    10. If needed, refine markup classes in front-page.php to support better layout and styling.
+
+    Do not:
+    - introduce a generic hero-metrics SaaS template
+    - overuse cards everywhere
+    - use gradient text
+    - break links or routes
+
+    Deliverables:
+    - edit files directly
+    - summarize the new homepage concept
+    - list changed files
+    - explain how the homepage now better differentiates NepaliGarage
+
+
+    3) New Cars / listing page prompt
+
+    text
+    Work on the New Cars & Bikes listing page.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-new-cars.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/assets/js/filter.js
+
+    Current page includes:
+    - page hero
+    - sidebar filters
+    - mobile filter trigger
+    - vehicle cards
+    - sorting
+    - schema annotations and data attributes
+
+    Goal:
+    Make this page feel like a serious vehicle discovery tool for Nepal, not a default filterable archive. It should feel fast, premium, and highly usable. The strongest qualities should be scanability, trust, and control.
+
+    Instructions:
+    1. Keep all filtering logic, data attributes, schema markup, and PHP query logic working.
+    2. Redesign the page layout and styling so it feels more like a high-end research interface.
+    3. Improve:
+       - page hero
+       - filter sidebar hierarchy
+       - mobile filter drawer experience
+       - sorting controls
+       - card density and scanability
+       - empty states and no-result states
+    4. Make the filter UI feel cleaner and more intentional:
+       - better section spacing
+       - clearer active states
+       - better count badges
+       - stronger mobile behavior
+    5. Improve the vehicle cards:
+       - better visual rhythm
+       - clearer make/model/price hierarchy
+       - cleaner badges for body type and EV
+       - stronger hover and focus states
+    6. Introduce subtle editorial cues that reinforce Nepal relevance and data confidence without clutter.
+    7. Keep performance and readability strong even with many cards.
+    8. Use CSS and light markup changes, not a JS-heavy redesign.
+
+    Do not:
+    - rewrite the data/query logic unless absolutely required
+    - make it look like an ecommerce product grid
+    - add bloated animations
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain the new UX improvements
+    - note any markup changes added specifically to support better design
+
+
+    4) Vehicle detail page prompt
+
+    text
+    Work on the vehicle detail page, this is one of the most important pages on the site.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-vehicle.php
+    - theme/nepaligarage-theme/assets/css/vehicle.css
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/assets/js/enquiry.js
+
+    Current page includes:
+    - breadcrumb
+    - hero with brand, body type, title, price, description, image
+    - variant tabs
+    - gallery
+    - key specs
+    - grouped specs
+    - accessories
+    - pros/cons
+    - known issues
+    - competition
+    - enquiry actions
+
+    Goal:
+    This page should feel like a premium automotive research page with Nepal-specific market authority. It should be the page that makes people think, “this site is different.” I want a clear blend of aspiration, trust, and utility.
+
+    Instructions:
+    1. Keep all PHP data fetching, variant switching, and enquiry hooks intact.
+    2. Redesign the hero and content hierarchy to feel more premium and editorial.
+    3. Make the pricing block feel more important and better contextualized.
+    4. Improve the variant selector so it is easier to compare trims at a glance.
+    5. Make the key specs section more useful and elegant.
+    6. Redesign grouped specs for readability and mobile scanning.
+    7. Improve gallery treatment so it feels intentional and polished.
+    8. Make pros/cons, known issues, and competition sections feel like real research insights, not filler blocks.
+    9. Strengthen CTA design for “Book a Test Drive” and “Get a Quote”.
+    10. Improve spacing, typography, and overall pacing between sections.
+    11. If useful, add supporting microcopy for confidence labels, sourcing, or Nepal context where it helps user trust.
+
+    Do not:
+    - turn everything into repetitive cards
+    - use gimmicky luxury effects
+    - break active image or variant switching behavior
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain the new page narrative from top to bottom
+    - call out any UX wins for mobile
+
+
+    5) Compare hub prompt
+
+    text
+    Work on the Compare Cars listing page.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-compare.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+
+    Current page includes:
+    - simple hero
+    - comparison cards
+    - optional page content
+
+    Goal:
+    Make this page feel like the front door to NepaliGarage’s strongest differentiator. This is not just a list of articles. It should feel like a library of buying decisions for Nepal.
+
+    Instructions:
+    1. Keep routing and PHP query logic intact.
+    2. Redesign the page hero and comparison listing.
+    3. Make the comparisons feel more useful, specific, and editorially strong.
+    4. Improve card hierarchy so title, summary, and CTA feel better organized.
+    5. Add visual cues that these are decision tools, not blog posts.
+    6. Improve empty state quality.
+    7. Keep the page clean and fast.
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain how the page now sells comparison content better
+
+
+    6) Comparison detail prompt
+
+    text
+    Work on the comparison detail experience. This is a key signature surface.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-comparison-detail.php
+    - plugin/templates/comparison-table.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+
+    Current experience includes:
+    - comparison page hero
+    - tab nav for spec categories
+    - side-by-side comparison tables
+    - Nepal context section
+    - TL;DR verdict box
+
+    Goal:
+    Turn this into a best-in-class side-by-side comparison experience for Nepal buyers. It should feel authoritative, clean, and highly readable on both desktop and mobile. The user should be able to quickly understand the differences and the recommendation.
+
+    Instructions:
+    1. Keep shortcode behavior and data rendering intact.
+    2. Improve the hero and intro section so the page feels more premium.
+    3. Redesign the comparison header so the two vehicles are easier to identify and compare immediately.
+    4. Improve the tab navigation and make category switching feel cleaner.
+    5. Redesign the tables for readability:
+       - clearer row rhythm
+       - stronger label/value distinction
+       - better winner/emphasis treatment when appropriate
+       - better sticky behavior if useful
+    6. Make the Nepal Context section feel especially valuable and differentiated.
+    7. Improve the TL;DR verdict box so it feels like an expert conclusion, not a generic summary.
+    8. Handle mobile carefully. Side-by-side comparisons often break on small screens, so solve that elegantly.
+    9. Use visual hierarchy, spacing, and restrained color to guide attention.
+
+    Do not:
+    - break the data renderer
+    - bury the verdict
+    - create horizontal scrolling chaos on mobile unless it is truly controlled and intentional
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain how the UX now supports faster decision making
+
+
+    7) Price estimator prompt
+
+    text
+    Work on the Nepal Car Price Estimator page and estimator UI.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-price-estimator.php
+    - plugin/includes/class-price-estimator.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+
+    Current estimator includes:
+    - page intro
+    - form with base price, vehicle type, engine/battery field
+    - AJAX result block
+
+    Goal:
+    Make this feel like a serious Nepal market intelligence tool, not just a simple calculator. It should build trust and make the pricing breakdown easy to understand.
+
+    Instructions:
+    1. Keep the existing estimator logic and AJAX behavior intact.
+    2. Redesign the page intro and the estimator component UI.
+    3. Improve the form layout, labels, helper text, and results presentation.
+    4. Make the results feel more premium and easier to interpret:
+       - clear total
+       - clean breakdown hierarchy
+       - better explanation of customs duty, VAT, road tax, and handling
+    5. Add non-intrusive trust cues about assumptions and estimates.
+    6. Improve responsiveness and accessibility.
+    7. If helpful, slightly improve component markup in the PHP render function, but do not rewrite the calculation logic.
+
+    Do not:
+    - change the calculation formula unless I explicitly ask
+    - turn it into a flashy gimmick
+    - make the form feel overly technical for normal users
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain how the estimator now feels more trustworthy and premium
+
+
+    8) News listing + article prompt
+
+    text
+    Work on the editorial content experience for NepaliGarage.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-news.php
+    - theme/nepaligarage-theme/single.php
+    - theme/nepaligarage-theme/archive.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+
+    Goal:
+    Make the content side of the site feel like a serious Nepal automotive publication, not a default WordPress blog. I want cleaner editorial presentation, stronger typography, and better content hierarchy.
+
+    Instructions:
+    1. Keep WordPress loop behavior intact.
+    2. Redesign the news index, archive cards, and single article layout.
+    3. Improve:
+       - article hero/title treatment
+       - metadata styling
+       - featured image handling
+       - body typography
+       - spacing for headings, paragraphs, lists, quotes, and tables
+       - tag/category treatment
+    4. Make the news listing feel like a proper editorial feed, not generic cards.
+    5. Improve article readability on desktop and mobile.
+    6. Add tasteful affordances like reading width control, better heading hierarchy, and cleaner post footer treatment.
+    7. Keep the design consistent with the premium vehicle intelligence brand.
+
+    Do not:
+    - add clutter around the article body
+    - make the blog look like a marketing landing page
+    - hurt readability with over-styled text
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain the editorial design system choices
+
+
+    9) About + Contact prompt
+
+    text
+    Work on the About and Contact pages.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-about.php
+    - theme/nepaligarage-theme/page-contact.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/page.php
+
+    Goal:
+    These pages should reinforce trust, transparency, and seriousness. Right now they are very plain. I want them to feel branded, intentional, and high credibility without being over-designed.
+
+    Instructions:
+    1. Keep the content meaning intact.
+    2. Redesign both pages so they feel like part of a premium research platform.
+    3. Improve layout, hierarchy, spacing, and section treatment.
+    4. Make trust, sourcing, corrections, and disclosure content easier to read and more credible.
+    5. For Contact, make it easier to understand what kinds of outreach NepaliGarage welcomes.
+    6. If useful, introduce cleaner content blocks, structured lists, or lightweight info panels.
+    7. Keep it elegant and restrained.
+
+    Do not:
+    - make these pages feel like startup fluff
+    - use generic “our mission” design clichés
+    - bloat them with unnecessary graphics
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain how the pages now build more trust
+
+
+    10) Dashboard / My Garage prompt
+
+    text
+    Work on the My Garage dashboard.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-dashboard.php
+    - theme/nepaligarage-theme/assets/css/dashboard.css
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/assets/js/dashboard.js
+    - theme/nepaligarage-theme/assets/js/auth.js
+
+    Current dashboard includes:
+    - sidebar nav
+    - vehicles
+    - maintenance
+    - fuel log
+    - documents
+    - profile
+    - auth gate
+    - multiple add/edit modals
+
+    Goal:
+    This should feel like a polished ownership operating system for Nepal vehicle owners. I want it to feel more product-grade and less like a basic admin page.
+
+    Instructions:
+    1. Keep auth behavior, tab behavior, forms, and data hooks working.
+    2. Redesign the dashboard layout and visual language to feel more premium and modern.
+    3. Improve:
+       - auth gate first impression
+       - sidebar navigation
+       - panel headers
+       - empty states
+       - garage cards
+       - maintenance and fuel logs
+       - documents area
+       - profile form
+       - modal quality
+    4. Make the dashboard feel calm, useful, and trustworthy.
+    5. Improve mobile responsiveness carefully.
+    6. Use stronger hierarchy and spacing, not visual noise.
+    7. If useful, refine markup classes in page-dashboard.php to support better design.
+
+    Do not:
+    - make it look like a generic SaaS admin template
+    - break JS interactions
+    - overload it with colors or charts unless they materially help
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain the UX improvements and product feel upgrades
+
+
+    11) Brand archive prompt
+
+    text
+    Work on the brand archive page for routes like /cars/[brand]/.
+
+    Files to inspect first:
+    - theme/nepaligarage-theme/page-brand.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+
+    Goal:
+    Make the brand archive feel like a strong intermediate page between discovery and model detail. It should feel curated and premium, not like a thin archive.
+
+    Instructions:
+    1. Keep routing and brand/variant query logic intact.
+    2. Redesign the hero and the vehicle grid presentation.
+    3. Improve card hierarchy, price presentation, and scanability.
+    4. Add subtle brand-page cues that make the page feel more intentional.
+    5. Improve the empty state.
+    6. Keep the design aligned with the homepage and listing page.
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - explain how the archive now better supports browsing
+
+
+    12) Final polish prompt, after all pages are improved
+
+    text
+    Do a full frontend polish pass across the NepaliGarage theme.
+
+    Inspect these areas:
+    - header/footer shell
+    - homepage
+    - listing page
+    - vehicle detail
+    - comparison pages
+    - price estimator
+    - news/article pages
+    - about/contact
+    - dashboard
+    - brand archive
+
+    Primary files likely involved:
+    - theme/nepaligarage-theme/header.php
+    - theme/nepaligarage-theme/footer.php
+    - theme/nepaligarage-theme/front-page.php
+    - theme/nepaligarage-theme/page-new-cars.php
+    - theme/nepaligarage-theme/page-vehicle.php
+    - theme/nepaligarage-theme/page-compare.php
+    - theme/nepaligarage-theme/page-comparison-detail.php
+    - theme/nepaligarage-theme/page-price-estimator.php
+    - theme/nepaligarage-theme/page-news.php
+    - theme/nepaligarage-theme/single.php
+    - theme/nepaligarage-theme/page-about.php
+    - theme/nepaligarage-theme/page-contact.php
+    - theme/nepaligarage-theme/page-dashboard.php
+    - theme/nepaligarage-theme/page-brand.php
+    - theme/nepaligarage-theme/assets/css/theme.css
+    - theme/nepaligarage-theme/assets/css/vehicle.css
+    - theme/nepaligarage-theme/assets/css/dashboard.css
+
+    Goal:
+    Do a cohesive quality pass so the whole site feels like one deliberate design system.
+
+    Tasks:
+    1. Normalize spacing rhythm, section spacing, and typography hierarchy.
+    2. Clean inconsistent button treatments, border radii, shadows, and card behaviors.
+    3. Improve states:
+       - hover
+       - focus
+       - active
+       - empty
+       - loading
+    4. Improve mobile layout consistency.
+    5. Fix any weak content hierarchy or visual dead spots.
+    6. Remove anything that feels template-like or visually generic.
+    7. Keep performance and maintainability in mind.
+
+    Deliverables:
+    - edit files directly
+    - list changed files
+    - summarize final design system improvements
+    - give a short manual QA checklist for before pushing to GitHub
+
+
+    A few practical tips for using these with Claude Code:
+
+    - Run one prompt at a time.
+    - Ask Claude Code to commit after each page:
+      - “Commit with a clear message after finishing.”
+    - If Claude Code gives too much theory and not enough implementation, add:
+      - “Do the edits directly, do not stop at a plan.”
+    - If it starts changing backend logic, add:
+      - “Do not rewrite data fetching or plugin logic unless required for markup hooks.”
+
+    Best sequence for fastest visible improvement:
+    1. Global shell
+    2. Homepage
+    3. Vehicle detail
+    4. Listing page
+    5. Comparison detail
+    6. Price estimator
+    7. News/article
+    8. Dashboard
+    9. About/contact
+    10. Final polish
+
+    If you want, I can also do one more pass and turn these into:
+    1. “aggressive standout prompts”
+    2. “safe premium prompts”
+    3. “luxury editorial prompts”
+
+    So you can choose a design style before pasting into Claude Code.
