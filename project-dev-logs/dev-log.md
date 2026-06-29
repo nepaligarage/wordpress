@@ -6,6 +6,49 @@
 
 ---
 
+## 2026-06-29 — Session: Phase A Implementation (Agentic Loop)
+
+### Summary
+Fan-out of 3 parallel sub-agents → coder implementation → committed. All Phase A changes shipped.
+
+### Commits this session
+| Hash | Description |
+|------|-------------|
+| `800a0c3` | git-agent: commit pending files (header.php, footer.php, filter.js, docs/plans/) |
+| `bde7535` | docs: add project development log |
+| `749bfbb` | docs: add 5 product spec docs for course correction |
+| `6425b58` | feat: Phase A — compare tray, dynamic compare route, CTA contrast |
+
+### Agents run
+- **git-agent** — committed 5 pending/untracked files from prior session
+- **spec-writer** — wrote 5 spec docs to `docs/specs/` (product page, comparison builder, finance, parts, team workflow)
+- **researcher** — deep-read 9 codebase files, produced `phase-a-brief.md` with exact line numbers and a critical slug-mismatch bug finding
+- **coder** — implemented all 7 Phase A changes
+
+### Phase A — What was implemented (commit `6425b58`)
+
+| Change | File | Detail |
+|--------|------|--------|
+| CTA contrast fix | `vehicle.css:93-98` | Border opacity .62→.92, fill .06→.12 |
+| Variant slug fix | `page-vehicle.php:303-310` | Added `data-variant-slug`, `data-price`, `data-thumb` (fixes model-vs-variant mismatch) |
+| Compare tray (new) | `assets/js/compare.js` | Vanilla JS, localStorage `ng_compare_list`, 0/2→2/2 state, slot cards, remove, URL routing |
+| Tray HTML | `footer.php:69` | `#ng-compare-tray` injected before `wp_footer()` — global across all pages |
+| Tray CSS | `theme.css` | `.ng-compare-tray` styles using existing design tokens |
+| Dynamic compare route | `page-compare.php:5-28` | `?a=slug&b=slug` handled at top, reuses `[ng_compare]` shortcode |
+| Global enqueue | `functions.php:57-63` | `compare.js` enqueued alongside `nav.js` on all pages |
+
+### Critical bug fixed
+Previous code stored `modelSlug` in compare state, but `[ng_compare]` shortcode queries Supabase `variants` table by `variantSlug`. These are different values — model "Atto 2" has variants "atto-2-standard-range" etc. Fixed by adding `data-variant-slug` from `$active['slug']` (cheapest/default variant).
+
+### Still pending (next session)
+- Deploy theme ZIP to production and live-verify compare tray + `/compare/?a=&b=` route
+- Phase B: convert `/compare/` hub from article-first to builder-first (vehicle picker by brand/type)
+- Phase C: finance/EMI system (`brand_finance_programs` table, downpayment controls)
+- Phase D: parts request MVP (`part_requests` table, request form)
+- Owner action: rotate Supabase DB password
+
+---
+
 ## 2026-06-29 — Session: Project Status Audit
 
 ### Summary
