@@ -172,8 +172,19 @@ get_header();
                 </div>
             </div>
 
+            <!-- Add a missing model to the shared catalog (revealed once a make is chosen) -->
+            <div class="ng-add-model" id="ng-v-add-model-wrap" hidden>
+                <button type="button" class="ng-link ng-add-model__toggle" id="ng-v-add-model-toggle">+ Model not listed? Add it</button>
+                <div class="ng-add-model__row" id="ng-v-add-model-row" hidden>
+                    <input type="text" id="ng-v-new-model" placeholder="e.g. Creta" autocomplete="off">
+                    <button type="button" class="ng-btn ng-btn--sm" id="ng-v-save-model">Add</button>
+                    <button type="button" class="ng-link" id="ng-v-cancel-model">Cancel</button>
+                </div>
+                <p class="ng-field-hint" id="ng-v-add-model-hint">Adds it to the shared list so other owners can pick it too.</p>
+            </div>
+
             <details class="ng-form-details">
-                <summary>Not in the list? Enter manually</summary>
+                <summary>Brand not listed? Enter manually</summary>
                 <div class="ng-form-row" style="margin-top:.75rem;">
                     <div class="ng-form-group">
                         <label for="ng-v-custom-make">Brand (manual)</label>

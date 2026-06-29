@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-define( 'NGT_VERSION', '1.2.0' );
+define( 'NGT_VERSION', '1.3.0' );
 define( 'NGT_DIR',     get_template_directory() );
 define( 'NGT_URI',     get_template_directory_uri() );
 

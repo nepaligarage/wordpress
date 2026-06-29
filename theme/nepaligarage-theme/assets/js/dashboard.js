@@ -86,7 +86,7 @@
 
         const { data, error } = await sb
             .from('user_vehicles')
-            .select('*, variant:variants(name, model:models(name, brand:brands(name)))')
+            .select('*, variant:variants(name, model:models(name, brand:brands(name))), model:models(name, brand:brands(name))')
             .eq('user_id', user.id)
             .eq('is_active', true)
             .order('created_at', { ascending: false });
@@ -114,8 +114,8 @@
     }
 
     function vehicleCard(v) {
-        const brand = v.variant?.model?.brand?.name || v.custom_make || '—';
-        const model = v.variant ? `${v.variant.model?.name} ${v.variant.name}` : (v.custom_model || '—');
+        const brand = v.variant?.model?.brand?.name || v.model?.brand?.name || v.custom_make || '—';
+        const model = v.variant ? `${v.variant.model?.name} ${v.variant.name}` : (v.model?.name || v.custom_model || '—');
         const name  = v.custom_name || model;
         const plate = v.plate_number ? `<span class="ng-garage-card__plate">${esc(v.plate_number)}</span>` : '';
         const km    = v.current_odometer_km ? `<div class="ng-garage-card__stat"><strong>${v.current_odometer_km.toLocaleString()} km</strong>Odometer</div>` : '';
@@ -235,37 +235,152 @@
         return 'link';
     }
 
+    // Standardise a user-typed model name: capitalise the first letter of each
+    // word, leave the rest as typed (preserves codes like "CR-V", "Atto 3").
+    function normalizeModelName(raw) {
+        return (raw || '').trim().replace(/\s+/g, ' ')
+            .split(' ')
+            .map(w => w ? w.charAt(0).toUpperCase() + w.slice(1) : w)
+            .join(' ');
+    }
+
+    function slugify(s) {
+        return (s || '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
+    function setHint(el, msg, isError) {
+        if (!el) return;
+        el.textContent = msg;
+        el.style.color = isError ? '#dc2626' : '';
+    }
+
+    // Insert a model option alphabetically (skipping the placeholder) if absent.
+    function upsertModelOption(select, model) {
+        if (Array.from(select.options).some(o => o.value === model.id)) return;
+        const opt = document.createElement('option');
+        opt.value = model.id;
+        opt.textContent = model.name;
+        const before = Array.from(select.options).slice(1)
+            .find(o => o.textContent.localeCompare(model.name) > 0);
+        select.insertBefore(opt, before || null);
+    }
+
+    // Add a user-contributed model to the shared catalog (dedupe case-insensitively).
+    // Returns the model row {id,name} — existing if one already matches, else new.
+    async function addUserModel(brandId, name, brandSlugStr) {
+        const { data: existing } = await sb.from('models').select('id,name')
+            .eq('brand_id', brandId).ilike('name', name).limit(1);
+        if (existing && existing.length) return existing[0];
+
+        const slug = `${brandSlugStr || 'model'}-${slugify(name)}`;
+        const { data, error } = await sb.from('models')
+            .insert({ brand_id: brandId, name, slug, source: 'user', created_by: user.id })
+            .select('id,name')
+            .single();
+        if (!error) return data;
+
+        // Race / slug clash → re-select whatever now matches
+        const { data: retry } = await sb.from('models').select('id,name')
+            .eq('brand_id', brandId).ilike('name', name).limit(1);
+        return (retry && retry.length) ? retry[0] : null;
+    }
+
     async function loadBrandsIntoForm() {
-        const makeSelect = document.getElementById('ng-v-make');
-        if (!makeSelect) return;
+        const makeSelect    = document.getElementById('ng-v-make');
+        const modelSelect   = document.getElementById('ng-v-model');
+        const variantSelect = document.getElementById('ng-v-variant');
+        const addWrap       = document.getElementById('ng-v-add-model-wrap');
+        if (!makeSelect || !modelSelect || !variantSelect) return;
 
         const { data } = await sb.from('brands').select('id,name,slug').order('name');
         if (!data) return;
 
+        const brandSlug = {};
+        data.forEach(b => { brandSlug[b.id] = b.slug || slugify(b.name); });
+
         makeSelect.innerHTML = '<option value="">Select make…</option>' +
             data.map(b => `<option value="${esc(b.id)}">${esc(b.name)}</option>`).join('');
 
-        makeSelect.addEventListener('change', async function () {
-            const modelSelect = document.getElementById('ng-v-model');
-            modelSelect.innerHTML = '<option value="">Loading…</option>';
-            modelSelect.disabled = true;
+        function resetSelect(sel, placeholder) {
+            sel.innerHTML = `<option value="">${placeholder}</option>`;
+            sel.disabled = true;
+        }
 
-            const { data: models } = await sb.from('models').select('id,name').eq('brand_id', makeSelect.value).order('name');
+        async function loadModels(brandId) {
+            resetSelect(modelSelect, 'Loading…');
+            const { data: models } = await sb.from('models').select('id,name')
+                .eq('brand_id', brandId).order('name');
             modelSelect.innerHTML = '<option value="">Select model…</option>' +
                 (models || []).map(m => `<option value="${esc(m.id)}">${esc(m.name)}</option>`).join('');
             modelSelect.disabled = false;
+            resetSelect(variantSelect, 'Select variant (optional)…');
+        }
 
-            modelSelect.addEventListener('change', async function () {
-                const variantSelect = document.getElementById('ng-v-variant');
-                variantSelect.innerHTML = '<option value="">Loading…</option>';
-                variantSelect.disabled = true;
+        async function loadVariants(modelId) {
+            resetSelect(variantSelect, 'Loading…');
+            const { data: variants } = await sb.from('variants').select('id,name')
+                .eq('model_id', modelId).order('name');
+            variantSelect.innerHTML = '<option value="">Select variant (optional)…</option>' +
+                (variants || []).map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
+            variantSelect.disabled = false;
+        }
 
-                const { data: variants } = await sb.from('variants').select('id,name').eq('model_id', modelSelect.value).order('name');
-                variantSelect.innerHTML = '<option value="">Select variant (optional)…</option>' +
-                    (variants || []).map(v => `<option value="${esc(v.id)}">${esc(v.name)}</option>`).join('');
-                variantSelect.disabled = false;
-            }, { once: true });
-        }, { once: true });
+        // Re-selectable (no { once: true } — changing make/model again re-loads)
+        makeSelect.addEventListener('change', function () {
+            if (!makeSelect.value) {
+                resetSelect(modelSelect, 'Select model…');
+                resetSelect(variantSelect, 'Select variant…');
+                if (addWrap) addWrap.hidden = true;
+                return;
+            }
+            loadModels(makeSelect.value);
+            if (addWrap) addWrap.hidden = false;
+        });
+
+        modelSelect.addEventListener('change', function () {
+            if (modelSelect.value) loadVariants(modelSelect.value);
+        });
+
+        // ── "Model not listed? Add it" affordance ───────────────────────────
+        const toggle  = document.getElementById('ng-v-add-model-toggle');
+        const row     = document.getElementById('ng-v-add-model-row');
+        const input   = document.getElementById('ng-v-new-model');
+        const saveBtn = document.getElementById('ng-v-save-model');
+        const cancel  = document.getElementById('ng-v-cancel-model');
+        const hint    = document.getElementById('ng-v-add-model-hint');
+
+        function showRow(show) {
+            if (row)    row.hidden = !show;
+            if (toggle) toggle.hidden = show;
+            if (show && input) { input.value = ''; input.focus(); }
+            if (!show) setHint(hint, 'Adds it to the shared list so other owners can pick it too.', false);
+        }
+        toggle?.addEventListener('click', () => showRow(true));
+        cancel?.addEventListener('click', () => showRow(false));
+
+        saveBtn?.addEventListener('click', async function () {
+            const brandId = makeSelect.value;
+            const name    = normalizeModelName(input?.value);
+            if (!brandId) { setHint(hint, 'Pick a make first.', true); return; }
+            if (!name)    { setHint(hint, 'Enter a model name.', true); return; }
+
+            saveBtn.disabled = true;
+            setHint(hint, 'Adding…', false);
+            const model = await addUserModel(brandId, name, brandSlug[brandId]);
+            saveBtn.disabled = false;
+            if (!model) { setHint(hint, 'Could not add that model — please try again.', true); return; }
+
+            upsertModelOption(modelSelect, model);
+            modelSelect.disabled = false;
+            modelSelect.value = model.id;
+            loadVariants(model.id);
+            showRow(false);
+            setHint(hint, `“${model.name}” added — now selectable by everyone.`, false);
+        });
+
+        input?.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter') { e.preventDefault(); saveBtn?.click(); }
+        });
     }
 
     if (vehicleForm) {
@@ -279,6 +394,7 @@
             const payload = {
                 user_id:              user.id,
                 variant_id:           fd.get('variant_id') || null,
+                model_id:             fd.get('model') || null,
                 custom_make:          fd.get('custom_make') || null,
                 custom_model:         fd.get('custom_model') || null,
                 custom_name:          fd.get('custom_name') || null,
@@ -345,7 +461,7 @@
         }
 
         el.innerHTML = vehicles.map(function (v) {
-            const label = v.custom_name || v.variant?.model?.name || v.custom_model || 'Vehicle';
+            const label = v.custom_name || v.variant?.model?.name || v.model?.name || v.custom_model || 'Vehicle';
             const active = v.id === activeVehicleId ? 'is-active' : '';
             return `<button class="ng-vehicle-selector__btn ${active}" data-id="${esc(v.id)}" data-ctx="${context}">${esc(label)}</button>`;
         }).join('');
@@ -807,7 +923,7 @@
 
         const ids = vehicles.map(v => v.id);
         const vName = {};
-        vehicles.forEach(v => { vName[v.id] = v.custom_name || v.variant?.model?.name || v.custom_model || 'Vehicle'; });
+        vehicles.forEach(v => { vName[v.id] = v.custom_name || v.variant?.model?.name || v.model?.name || v.custom_model || 'Vehicle'; });
 
         const [docs, maint, obligs] = await Promise.all([
             sb.from('documents').select('user_vehicle_id,title,doc_type,expiry_date,reminder_days').in('user_vehicle_id', ids),
