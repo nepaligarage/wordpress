@@ -110,6 +110,11 @@
         financeYears.addEventListener('change', renderFinance);
     }
 
+    if (financeInterest) {
+        // Editable only for the indicative/generic program; official rates stay locked.
+        financeInterest.addEventListener('input', renderFinance);
+    }
+
     if (financeQuoteBtn) {
         financeQuoteBtn.addEventListener('click', function () {
             var financeContext = buildFinanceQuoteSubtitle();
@@ -230,7 +235,16 @@
         financeDownpayment.value = Math.max(0, currentAmount);
 
         if (financeInterest) {
-            financeInterest.value = toNumber(program.interest_rate).toFixed(2) + '% p.a.';
+            if (program.is_generic) {
+                // Indicative estimate: let the buyer type their bank's quoted rate.
+                financeInterest.readOnly = false;
+                if (forceReset || financeInterest.value === '' || !isFinite(toNumber(financeInterest.value))) {
+                    financeInterest.value = toNumber(program.interest_rate).toFixed(2);
+                }
+            } else {
+                financeInterest.readOnly = true;
+                financeInterest.value = toNumber(program.interest_rate).toFixed(2) + '% p.a.';
+            }
         }
 
         if (financeYears) {
@@ -266,22 +280,32 @@
         var loanAmount = Math.max(activeVariantPrice - downpaymentAmount, 0);
         var years = parseInt(financeYears ? financeYears.value : (program.default_years || 1), 10) || 1;
         var months = years * 12;
-        var annualRate = toNumber(program.interest_rate);
-        var monthlyRate = annualRate / 12 / 100;
+        // Generic program uses the editable interest field; official programs are locked to their rate.
+        var annualRate = (program.is_generic && financeInterest) ? toNumber(financeInterest.value) : toNumber(program.interest_rate);
+        if (annualRate < 0) annualRate = 0;
         var monthlyEmi = months ? loanAmount / months : 0;
+        var totalInterest = 0;
 
-        if (monthlyRate > 0 && months > 0) {
-            monthlyEmi = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+        if ((program.interest_type === 'flat') && annualRate > 0 && months > 0) {
+            // Flat-rate: interest charged on the full principal for the whole tenure.
+            totalInterest = loanAmount * (annualRate / 100) * (months / 12);
+            monthlyEmi = (loanAmount + totalInterest) / months;
+        } else {
+            var monthlyRate = annualRate / 12 / 100;
+            if (monthlyRate > 0 && months > 0) {
+                monthlyEmi = loanAmount * monthlyRate * Math.pow(1 + monthlyRate, months) / (Math.pow(1 + monthlyRate, months) - 1);
+            }
+            totalInterest = Math.max(monthlyEmi * months - loanAmount, 0);
         }
 
         var totalPayable = monthlyEmi * months;
-        var totalInterest = Math.max(totalPayable - loanAmount, 0);
 
         setFinanceText('ng-finance-price', formatNpr(activeVariantPrice));
         setFinanceText('ng-finance-downpayment-display', formatNpr(downpaymentAmount));
         setFinanceText('ng-finance-downpayment-percent', downpaymentPercent.toFixed(1) + '% of vehicle price');
         setFinanceText('ng-finance-monthly-emi', formatNpr(monthlyEmi));
-        setFinanceText('ng-finance-term-summary', years + ' years • ' + annualRate.toFixed(2) + '% p.a.');
+        var rateTypeLabel = (program.interest_type === 'flat') ? '% p.a. flat' : '% p.a. reducing';
+        setFinanceText('ng-finance-term-summary', years + ' years • ' + annualRate.toFixed(2) + rateTypeLabel);
         setFinanceText('ng-finance-loan-amount', formatNpr(loanAmount));
         setFinanceText('ng-finance-total-payable', formatNpr(totalPayable + downpaymentAmount));
         setFinanceText('ng-finance-total-interest', formatNpr(totalInterest));

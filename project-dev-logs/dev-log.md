@@ -6,6 +6,36 @@
 
 ---
 
+## 2026-06-29 — Session: Phase C — Finance / EMI System ✅
+
+### Summary
+Finance data moved out of hardcoded PHP into a Supabase **`brand_finance_programs`** table with RLS, a mandatory-source CHECK constraint, and an optional per-tenure child table. Every priced vehicle now shows an EMI calculator: official schemes when published, otherwise an **indicative estimate** with an editable rate and a clear disclaimer — no vehicle ever renders a hidden/empty finance block (spec §5/§7). Added **flat-rate** EMI math alongside the existing reducing-balance amortization.
+
+### What shipped
+| Change | File | Detail |
+|--------|------|--------|
+| Schema (new) | Supabase `brand_finance_programs` + `brand_finance_program_terms` | RLS anon-read `is_active=true`; CHECK forces non-manual rows to carry `source_url`+`source_label`+`verified_at`; `updated_at` trigger; indexes on `(brand_id,is_active)` and `(model_id)` |
+| Seed | Supabase | BYD Atto 2 official baseline (5.27% reducing, 40% min down, 84-mo, Cimex source), `is_active=true` |
+| Data layer (rewrite) | `functions.php` `ngt_vehicle_finance_programs()` | Queries Supabase by `brand_id` + (`model_id` OR brand-wide null) via PostgREST `or=()`, model-specific ranked first; 15-min cache. Replaces the hardcoded BYD-only return |
+| Row → contract map | `functions.php` `ngt_map_finance_program()` | Maps DB row to the JS program shape; derives `supported_years` from `max_tenure_months` (or child terms), builds source/verification note + processing-fee note, carries `interest_type` |
+| Generic fallback (new) | `functions.php` `ngt_generic_finance_program()` | 12% reducing, 20% down, 1–7yr, **editable rate**, `is_generic=true`, indicative disclaimer |
+| Always-render finance | `page-vehicle.php` | Falls back to generic program when no official scheme + price exists; dynamic eyebrow/title/helper; interest field editable (not readonly) in generic mode |
+| Flat-rate + editable rate | `assets/js/enquiry.js` | `renderFinance()` branches `interest_type` (flat vs reducing); generic program reads rate from the editable field; term summary labels flat/reducing; new `input` listener on the interest field |
+
+### Verified
+- Exact PostgREST query (anon key + RLS + `or` filter + nested embed) returns the seeded BYD program — confirmed against live REST API.
+- Seed row active and matches the previous hardcoded numbers (5.27% / 40% / 7yr), so the BYD Atto 2 page is unchanged for buyers but now DB-driven.
+- `enquiry.js` passes `node --check`.
+
+### Deferred (spec items not in this pass)
+- Admin "Finance Programs" UI with operator-creates-draft / admin-approves workflow (spec §6) — mandatory-source rule is enforced for now by the DB CHECK constraint + render-time gating.
+- Per-tenure variable rates (`brand_finance_program_terms`) are schema-ready but not yet surfaced in the UI (single program rate used).
+
+### Next
+- Phase D: parts request MVP (`part_requests` table, request form).
+
+---
+
 ## 2026-06-29 — Session: Phase B — Builder-First Compare Hub ✅
 
 ### Summary

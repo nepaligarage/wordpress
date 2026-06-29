@@ -288,36 +288,139 @@ function ngt_compare_catalog(): array {
 }
 
 /**
- * Model-specific finance programs shown on vehicle pages.
- *
- * Keep these programs tied to traceable public sources until they move into Supabase.
+ * Official finance programs for a vehicle, sourced from Supabase `brand_finance_programs`.
+ * Model-specific programs rank ahead of brand-wide ones. Returns the existing JS contract shape.
  *
  * @return array<int, array<string, mixed>>
  */
 function ngt_vehicle_finance_programs( array $brand, array $model ): array {
-    $brand_slug = sanitize_title( (string) ( $brand['slug'] ?? '' ) );
-    $model_slug = sanitize_title( (string) ( $model['slug'] ?? '' ) );
-    $model_name = strtolower( trim( (string) ( $model['name'] ?? '' ) ) );
-
-    if ( 'byd' === $brand_slug && ( 'atto-2' === $model_slug || 'byd-atto-2' === $model_slug || 'atto 2' === $model_name || 'byd atto 2' === $model_name ) ) {
-        return [
-            [
-                'id'                        => 'byd-nepal-official-baseline',
-                'label'                     => 'BYD Nepal official EMI baseline',
-                'source_name'               => 'Cimex BYD Nepal EMI Calculator',
-                'source_url'                => 'https://cimex.com.np/emi-calculator',
-                'source_note'               => 'Uses the current BYD Nepal calculator baseline: 40% down payment, 5.27% annual interest, 7-year planning horizon.',
-                'interest_rate'             => 5.27,
-                'min_downpayment_percent'   => 40,
-                'max_downpayment_percent'   => 90,
-                'supported_years'           => [ 1, 2, 3, 4, 5, 6, 7 ],
-                'default_years'             => 7,
-                'processing_fee_note'       => 'Dealer and bank processing fees are not included in this EMI preview.',
-            ],
-        ];
+    $brand_id = sanitize_text_field( (string) ( $brand['id'] ?? '' ) );
+    $model_id = sanitize_text_field( (string) ( $model['id'] ?? '' ) );
+    if ( '' === $brand_id ) {
+        return [];
     }
 
-    return [];
+    // model-specific OR brand-wide (model_id null) active programs.
+    $or = $model_id
+        ? '(model_id.eq.' . $model_id . ',and(model_id.is.null,brand_id.eq.' . $brand_id . '))'
+        : '(and(model_id.is.null,brand_id.eq.' . $brand_id . '))';
+
+    $rows = ngt_supabase_get(
+        'brand_finance_programs',
+        [
+            'select'    => 'id,partner_name,program_name,interest_type,interest_rate,min_downpayment_percent,max_tenure_months,processing_fee_npr,insurance_notes,source_url,source_label,verified_at,is_manual_estimate,model_id,terms:brand_finance_program_terms(tenure_months,interest_rate,min_downpayment_percent,display_order)',
+            'is_active' => 'eq.true',
+            'or'        => $or,
+            'order'     => 'model_id.desc.nullslast,min_downpayment_percent.asc',
+        ],
+        15 * MINUTE_IN_SECONDS
+    );
+
+    $programs = [];
+    foreach ( $rows as $row ) {
+        $programs[] = ngt_map_finance_program( $row );
+    }
+
+    return $programs;
+}
+
+/**
+ * Map a Supabase brand_finance_programs row to the front-end program contract
+ * consumed by page-vehicle.php + enquiry.js.
+ *
+ * @return array<string, mixed>
+ */
+function ngt_map_finance_program( array $row ): array {
+    $rate          = (float) ( $row['interest_rate'] ?? 0 );
+    $interest_type = ( 'flat' === ( $row['interest_type'] ?? 'reducing' ) ) ? 'flat' : 'reducing';
+    $min_down      = (float) ( $row['min_downpayment_percent'] ?? 20 );
+    $max_tenure    = max( 12, (int) ( $row['max_tenure_months'] ?? 84 ) );
+
+    // Tenure options: from child terms when present, else yearly steps up to max.
+    $terms = is_array( $row['terms'] ?? null ) ? $row['terms'] : [];
+    if ( ! empty( $terms ) ) {
+        $years = [];
+        foreach ( $terms as $term ) {
+            $m = (int) ( $term['tenure_months'] ?? 0 );
+            if ( $m > 0 ) {
+                $years[] = max( 1, (int) round( $m / 12 ) );
+            }
+        }
+        $years = array_values( array_unique( $years ) );
+        sort( $years );
+    } else {
+        $max_years = max( 1, (int) floor( $max_tenure / 12 ) );
+        $years     = range( 1, $max_years );
+    }
+    $default_years = ! empty( $years ) ? (int) end( $years ) : 7;
+
+    $partner = trim( (string) ( $row['partner_name'] ?? '' ) );
+    $program = trim( (string) ( $row['program_name'] ?? 'Finance program' ) );
+    $label   = $partner ? $program . ' — ' . $partner : $program;
+
+    $verified = '';
+    if ( ! empty( $row['verified_at'] ) ) {
+        $ts = strtotime( (string) $row['verified_at'] );
+        if ( $ts ) {
+            $verified = ' · Verified ' . gmdate( 'j M Y', $ts );
+        }
+    }
+
+    $note_bits = [];
+    $note_bits[] = sprintf(
+        '%s scheme at %s%% p.a. with a minimum %s%% down payment.',
+        'flat' === $interest_type ? 'Flat-rate' : 'Reducing-balance',
+        rtrim( rtrim( number_format( $rate, 2 ), '0' ), '.' ),
+        rtrim( rtrim( number_format( $min_down, 2 ), '0' ), '.' )
+    );
+    if ( ! empty( $row['insurance_notes'] ) ) {
+        $note_bits[] = (string) $row['insurance_notes'];
+    }
+
+    $fee_note = 'Dealer and bank processing fees are not included in this EMI preview.';
+    if ( ! empty( $row['processing_fee_npr'] ) ) {
+        $fee_note = 'One-time processing fee of NPR ' . number_format( (float) $row['processing_fee_npr'] ) . ' applies on top of this EMI preview.';
+    }
+
+    return [
+        'id'                      => (string) ( $row['id'] ?? wp_generate_uuid4() ),
+        'label'                   => $label,
+        'source_name'             => trim( (string) ( $row['source_label'] ?? '' ) . $verified ) ?: 'Official source',
+        'source_url'              => (string) ( $row['source_url'] ?? '' ),
+        'source_note'             => implode( ' ', $note_bits ),
+        'interest_type'           => $interest_type,
+        'interest_rate'           => $rate,
+        'min_downpayment_percent' => $min_down,
+        'max_downpayment_percent' => 90,
+        'supported_years'         => array_values( $years ),
+        'default_years'           => $default_years,
+        'processing_fee_note'     => $fee_note,
+        'is_generic'              => false,
+    ];
+}
+
+/**
+ * Generic indicative EMI fallback used when no official scheme exists for a vehicle.
+ * Spec §5: never hide EMI — show an editable indicative calculator with a clear disclaimer.
+ *
+ * @return array<string, mixed>
+ */
+function ngt_generic_finance_program(): array {
+    return [
+        'id'                      => 'generic-indicative',
+        'label'                   => 'Indicative EMI estimate',
+        'source_name'             => 'NepaliGarage indicative calculator',
+        'source_url'              => '',
+        'source_note'             => 'No official finance scheme is published for this vehicle yet. This is an indicative estimate using a typical Nepal auto-loan rate — adjust the rate to match a quote from your bank.',
+        'interest_type'           => 'reducing',
+        'interest_rate'           => 12.0,
+        'min_downpayment_percent' => 20,
+        'max_downpayment_percent' => 90,
+        'supported_years'         => [ 1, 2, 3, 4, 5, 6, 7 ],
+        'default_years'           => 5,
+        'processing_fee_note'     => 'Indicative only — not a quoted offer. Confirm the exact rate, tenure, and fees with your bank or dealer.',
+        'is_generic'              => true,
+    ];
 }
 
 function ngt_price_badge_html( array $price ): string {

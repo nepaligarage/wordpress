@@ -192,6 +192,10 @@ if ( ! $brochure_url && ( $brand['slug'] ?? '' ) === 'byd' ) {
 }
 
 $finance_programs = ( $brand && $model ) ? ngt_vehicle_finance_programs( $brand, $model ) : [];
+// Spec §5: any priced vehicle must show finance — fall back to the indicative estimate.
+if ( empty( $finance_programs ) && null !== $active_amount ) {
+    $finance_programs = [ ngt_generic_finance_program() ];
+}
 $has_finance      = ! empty( $finance_programs ) && null !== $active_amount;
 $finance_programs_json = $has_finance ? wp_json_encode( array_values( $finance_programs ) ) : '';
 $default_compare_url = '';
@@ -364,6 +368,20 @@ get_header();
     $min_downpayment_percent = (float) ( $primary_finance['min_downpayment_percent'] ?? 0 );
     $default_years = (int) ( $primary_finance['default_years'] ?? 0 );
     $supported_years = array_values( array_filter( array_map( 'intval', (array) ( $primary_finance['supported_years'] ?? [] ) ) ) );
+    $is_generic_finance = ! empty( $primary_finance['is_generic'] );
+    $vehicle_display_name = trim( (string) ( $brand['name'] ?? '' ) . ' ' . (string) ( $model['name'] ?? '' ) );
+    if ( '' === $vehicle_display_name ) {
+        $vehicle_display_name = 'This vehicle';
+    }
+    if ( $is_generic_finance ) {
+        $finance_eyebrow      = 'Indicative EMI estimate';
+        $finance_title        = 'Estimate monthly EMI — adjust the rate to match your bank';
+        $finance_rate_helper  = 'Indicative rate. Edit it to match a quote from your bank or dealer.';
+    } else {
+        $finance_eyebrow      = $vehicle_display_name . ' finance snapshot';
+        $finance_title        = 'EMI planning with the lowest official down payment pre-filled';
+        $finance_rate_helper  = 'Locked to the current official ' . $vehicle_display_name . ' finance baseline.';
+    }
 ?>
 <section class="ng-vehicle-finance" id="ng-vehicle-finance"
          data-price-amount="<?php echo esc_attr( null !== $active_amount ? (string) $active_amount : '' ); ?>"
@@ -371,8 +389,8 @@ get_header();
     <div class="ng-container">
         <div class="ng-vehicle-finance__shell">
             <div class="ng-vehicle-finance__intro">
-                <span class="ng-vehicle-finance__eyebrow">BYD Atto 2 finance snapshot</span>
-                <h2 class="ng-vehicle-section__title">EMI planning with the lowest official down payment pre-filled</h2>
+                <span class="ng-vehicle-finance__eyebrow"><?php echo esc_html( $finance_eyebrow ); ?></span>
+                <h2 class="ng-vehicle-section__title"><?php echo esc_html( $finance_title ); ?></h2>
                 <p class="ng-vehicle-finance__copy"><?php echo esc_html( $primary_finance['source_note'] ?? '' ); ?></p>
                 <div class="ng-vehicle-finance__source-row">
                     <span class="ng-vehicle-finance__source-label"><?php echo esc_html( $primary_finance['source_name'] ?? 'Official source' ); ?></span>
@@ -411,8 +429,10 @@ get_header();
 
                     <div class="ng-vehicle-finance__field">
                         <label for="ng-finance-interest">Interest rate</label>
-                        <input id="ng-finance-interest" type="text" value="<?php echo esc_attr( number_format_i18n( (float) ( $primary_finance['interest_rate'] ?? 0 ), 2 ) ); ?>% p.a." readonly>
-                        <p class="ng-vehicle-finance__helper">Locked to the current official BYD Nepal baseline.</p>
+                        <input id="ng-finance-interest" type="text"
+                               value="<?php echo esc_attr( $is_generic_finance ? number_format_i18n( (float) ( $primary_finance['interest_rate'] ?? 0 ), 2 ) : number_format_i18n( (float) ( $primary_finance['interest_rate'] ?? 0 ), 2 ) . '% p.a.' ); ?>"
+                               <?php echo $is_generic_finance ? '' : 'readonly'; ?>>
+                        <p class="ng-vehicle-finance__helper"><?php echo esc_html( $finance_rate_helper ); ?></p>
                     </div>
                 </div>
 
