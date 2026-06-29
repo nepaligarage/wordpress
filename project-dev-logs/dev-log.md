@@ -6,6 +6,45 @@
 
 ---
 
+## 2026-06-29 — Session: Phase B — Builder-First Compare Hub ✅
+
+### Summary
+`/compare/` is now a **builder**, not just an editorial library. Users pick any two cars (brand / body type / search), get a shareable `?a=&b=` URL, and land on the existing server-rendered comparison. Editorial comparisons moved below as a secondary section. Shipped via auto-deploy (run 28357650345 → success).
+
+### Commit
+| Hash | Description |
+|------|-------------|
+| `30f609e` | feat: Phase B — builder-first /compare/ with two-slot vehicle picker |
+
+### What shipped
+| Change | File | Detail |
+|--------|------|--------|
+| Catalog helper | `functions.php` `ngt_compare_catalog()` | Fetches all `is_available_nepal` variants, groups to one entry per model (cheapest variant), nested brand/model embed; 15-min cache |
+| Builder enqueue | `functions.php` | `compare-builder.js` + `ngCompareBuilder` (catalog + compareBase) localized, only on `is_page('compare')` |
+| Builder UI (new) | `assets/js/compare-builder.js` | Two slots A/B, brand+body-type dropdowns, debounced search, result list (cap 80), dedupe same model across slots, localStorage `ng_compare_list` sync, `history.replaceState` shareable URL, hydrate from `?a=&b=` |
+| Tray sync | `assets/js/compare.js` | Listens for `ng:compare:change` → re-render global tray when builder mutates list |
+| Page restructure | `page-compare.php` | Builder section above benefits; hero CTA → "Build a comparison"; editorial library now secondary; result-page back btn → "Pick different cars" |
+| Styles | `theme.css` | `.ng-cbuilder` builder styles using existing tokens; responsive A‑VS‑B grid at ≥860px |
+
+### Verified live
+- `compare-builder.js` → 200, contains `ngCompareBuilder`
+- `/compare/` → builder root present, catalog inlined with **93 models**
+- Builder URL `/compare/?a=byd-atto-3-standard-range&b=byd-seal-dynamic` → 200, comparison table renders, "Pick different cars" back button present
+
+### Design decision (deviation from spec)
+Spec §7 said URL uses **model** slugs; shipped reality uses **variant** slugs (the `[ng_compare]` renderer queries the `variants` table by slug, and the Phase A `ng_compare_list` already stores variant slugs). Stayed consistent with production to avoid orphaning existing compare lists.
+
+### Deferred (spec items not in this pass)
+- Live in-place car swap on the result page **without reload** (spec §3/§8) — currently the result page is server-rendered; swapping returns to the builder. Needs client-side comparison rendering or an AJAX endpoint.
+- Finance EMI side-by-side block (spec §4.3) — belongs to Phase C.
+- Spec-table "better value" highlighting (spec §4.2) — enhancement to `NG_Comparison_Renderer`.
+
+### Next
+- Phase C: finance/EMI (`brand_finance_programs` table, shared downpayment+tenure controls)
+- Phase D: parts request MVP
+
+---
+
 ## 2026-06-29 — Session: CI/CD Auto-Deploy Live ✅
 
 ### Summary
