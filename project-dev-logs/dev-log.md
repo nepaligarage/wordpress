@@ -6,6 +6,34 @@
 
 ---
 
+## 2026-06-29 — Session: CI/CD Auto-Deploy Live ✅
+
+### Summary
+GitHub Actions auto-deploy pipeline is fully operational. Every push to `main` or `phase-*/**` now rsyncs theme + plugin to the cPanel server and runs the route smoke test — no manual ZIP upload needed.
+
+### What shipped
+| Item | Detail |
+|------|--------|
+| `.github/workflows/deploy.yml` | Triggers on push to `main` / `phase-*/**`; SSH via `CPANEL_SSH_KEY` secret; rsync theme + plugin; verify routes |
+| `automation/scripts/deploy.sh` | `HOST` → `nepaligarage` SSH config alias for local on-demand deploys |
+| GitHub secrets | `CPANEL_SSH_KEY`, `CPANEL_SSH_HOST`, `CPANEL_SSH_USER`, `CPANEL_KNOWN_HOSTS` |
+
+### Issues fixed during setup
+- **`workflow` OAuth scope** — push of `.github/workflows/` rejected; resolved with a PAT carrying `repo` + `workflow` scopes
+- **Branch glob** — `phase-*` doesn't match slashes; changed to `phase-*/**`
+- **`error in libcrypto` (3 failed runs)** — `CPANEL_SSH_KEY` secret corrupted by manual copy-paste; **fixed by setting via gh CLI directly from the key file** (`gh secret set CPANEL_SSH_KEY < ~/.ssh/nepaligarage_deploy`)
+
+### Verified live (run 28356508898 → success, 41s)
+- `/compare/?a=byd-atto-2-standard-range&b=urban-cruiser-ebella-61kwh` → 200
+- `compare.js` deployed & contains `ng_compare_list` → 200
+- Compare tray present in homepage HTML (8 matches)
+- Homepage → 200
+
+### Now possible
+- Claude can deploy autonomously: push to `phase-*/**` → live in ~60s, or run `bash automation/scripts/deploy.sh` locally
+
+---
+
 ## 2026-06-29 — Session: Phase A Implementation (Agentic Loop)
 
 ### Summary
