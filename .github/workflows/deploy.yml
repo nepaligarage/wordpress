@@ -1,0 +1,48 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - 'phase-*'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up SSH
+        run: |
+          install -m 600 -D /dev/null ~/.ssh/id_ed25519
+          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.CPANEL_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+
+      - name: Deploy theme
+        run: |
+          rsync -az --delete \
+            --exclude=".DS_Store" --exclude=".claude-flow/" \
+            theme/nepaligarage-theme/ \
+            ${{ secrets.CPANEL_SSH_USER }}@${{ secrets.CPANEL_SSH_HOST }}:/home/${{ secrets.CPANEL_SSH_USER }}/nepaligarage.com/wp-content/themes/nepaligarage-theme/
+
+      - name: Deploy plugin
+        run: |
+          rsync -az --delete --exclude=".DS_Store" \
+            plugin/assets/ \
+            ${{ secrets.CPANEL_SSH_USER }}@${{ secrets.CPANEL_SSH_HOST }}:/home/${{ secrets.CPANEL_SSH_USER }}/nepaligarage.com/wp-content/plugins/nepaligarage-core/assets/
+
+          rsync -az --delete --exclude=".DS_Store" \
+            plugin/includes/ \
+            ${{ secrets.CPANEL_SSH_USER }}@${{ secrets.CPANEL_SSH_HOST }}:/home/${{ secrets.CPANEL_SSH_USER }}/nepaligarage.com/wp-content/plugins/nepaligarage-core/includes/
+
+          rsync -az --delete --exclude=".DS_Store" \
+            plugin/templates/ \
+            ${{ secrets.CPANEL_SSH_USER }}@${{ secrets.CPANEL_SSH_HOST }}:/home/${{ secrets.CPANEL_SSH_USER }}/nepaligarage.com/wp-content/plugins/nepaligarage-core/templates/
+
+          rsync -az \
+            plugin/nepaligarage-core.php \
+            ${{ secrets.CPANEL_SSH_USER }}@${{ secrets.CPANEL_SSH_HOST }}:/home/${{ secrets.CPANEL_SSH_USER }}/nepaligarage.com/wp-content/plugins/nepaligarage-core/nepaligarage-core.php
+
+      - name: Verify routes
+        run: bash automation/scripts/verify-public-routes.sh https://nepaligarage.com

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-HOST="parajuliz@parajulizbakery.com.np"
+HOST="nepaligarage"
 REMOTE_BASE="/home/parajuliz/nepaligarage.com/wp-content"
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 
