@@ -882,6 +882,10 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
     margin-bottom: 14px;
 }
 .ng-auth-switch { font-size: .875rem; color: var(--ng-text-muted); text-align: center; margin-top: 16px; }
+.ng-auth-notice { text-align: center; padding: 8px 4px; }
+.ng-auth-notice__icon { font-size: 2.4rem; line-height: 1; margin-bottom: 12px; }
+.ng-auth-notice p { font-size: .9rem; color: var(--ng-text-muted); margin: 8px 0 0; }
+.ng-auth-notice strong { color: var(--ng-text); word-break: break-all; }
 .ng-link {
     background: none;
     border: none;

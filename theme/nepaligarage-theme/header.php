@@ -109,6 +109,14 @@
             <p class="ng-auth-switch">Already have an account? <button type="button" class="ng-link" data-tab="signin">Sign in</button></p>
         </form>
 
+        <!-- Registration confirmation notice (shown after sign-up when email confirmation is required) -->
+        <div class="ng-auth-notice" id="ng-reg-confirm" hidden>
+            <div class="ng-auth-notice__icon" aria-hidden="true">✉️</div>
+            <h2 class="ng-modal__title">Check your email</h2>
+            <p>We've sent a confirmation link to <strong id="ng-reg-confirm-email"></strong>. Click it to activate your account, then come back and sign in.</p>
+            <p class="ng-auth-switch">Confirmed already? <button type="button" class="ng-link" data-tab="signin">Sign in</button></p>
+        </div>
+
     </div>
 </div>
 

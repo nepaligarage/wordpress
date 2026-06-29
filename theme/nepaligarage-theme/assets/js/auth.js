@@ -25,6 +25,8 @@
     const registerForm = document.getElementById('ng-register-form');
     const signinErr    = document.getElementById('ng-signin-error');
     const regErr       = document.getElementById('ng-reg-error');
+    const regConfirm   = document.getElementById('ng-reg-confirm');
+    const regConfirmEmail = document.getElementById('ng-reg-confirm-email');
 
     const modalTabs    = document.querySelectorAll('.ng-modal__tab');
 
@@ -51,7 +53,20 @@
         });
         if (signinForm)   signinForm.hidden   = tab !== 'signin';
         if (registerForm) registerForm.hidden = tab !== 'register';
+        // Switching tabs always dismisses the post-signup confirmation notice
+        if (regConfirm)   regConfirm.hidden   = true;
         clearErrors();
+    }
+
+    // Create the user's profile row if it doesn't exist yet (idempotent, never
+    // overwrites an edited display name). Runs once a real session exists.
+    async function ensureProfile(user) {
+        if (!user) return;
+        const name = user.user_metadata?.display_name || null;
+        await sb.from('user_profiles').upsert(
+            { user_id: user.id, display_name: name },
+            { onConflict: 'user_id', ignoreDuplicates: true }
+        );
     }
 
     function clearErrors() {
@@ -87,6 +102,12 @@
 
     sb.auth.onAuthStateChange(function (event, session) {
         setAuthState(session ? session.user : null);
+
+        // Ensure a profile row exists once the user has a real session
+        // (covers the email-confirmation flow, where signUp returns no session)
+        if (event === 'SIGNED_IN' && session && session.user) {
+            ensureProfile(session.user);
+        }
 
         // Fire custom event so dashboard.js can react
         document.dispatchEvent(new CustomEvent('ngAuthState', {
@@ -178,24 +199,27 @@
                 options: { data: { display_name: name } },
             });
 
+            submit.disabled = false;
+            submit.textContent = 'Create Account — Free';
+
             if (error) {
                 showError(regErr, error.message);
-                submit.disabled = false;
-                submit.textContent = 'Create Account — Free';
                 return;
             }
 
-            // Create profile row
-            if (data.user) {
-                await sb.from('user_profiles').upsert({
-                    user_id:      data.user.id,
-                    display_name: name,
-                }, { onConflict: 'user_id' });
+            if (data.session) {
+                // Auto-confirm is on → user is signed in immediately.
+                // ensureProfile() runs from the SIGNED_IN listener.
+                closeModal();
+            } else {
+                // Email confirmation required → no session yet. Show the
+                // "check your email" notice instead of silently closing.
+                // The profile row is created on first confirmed sign-in.
+                if (regConfirmEmail) regConfirmEmail.textContent = email;
+                if (registerForm)    registerForm.hidden = true;
+                if (regConfirm)      regConfirm.hidden    = false;
+                registerForm?.reset();
             }
-
-            closeModal();
-            submit.disabled = false;
-            submit.textContent = 'Create Account — Free';
         });
     }
 
