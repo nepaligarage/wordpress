@@ -69,6 +69,18 @@
     </div>
 </div>
 
+<div id="ng-compare-tray" class="ng-compare-tray" aria-label="Compare vehicles" role="region" hidden>
+  <div class="ng-compare-tray__inner">
+    <div class="ng-compare-tray__header">
+      <span class="ng-compare-tray__count" id="ng-compare-count">0/2</span>
+      <span class="ng-compare-tray__title">Compare Vehicles</span>
+      <button class="ng-compare-tray__clear" id="ng-compare-clear" type="button">Clear all</button>
+    </div>
+    <div class="ng-compare-tray__slots" id="ng-compare-slots"></div>
+    <a href="#" class="ng-btn ng-btn--red ng-btn--full ng-compare-tray__go" id="ng-compare-go" aria-disabled="true">Compare</a>
+  </div>
+</div>
+
 <?php wp_footer(); ?>
 </body>
 </html>

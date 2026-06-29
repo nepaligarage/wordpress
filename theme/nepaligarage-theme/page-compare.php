@@ -2,6 +2,29 @@
 /*
  * Template Name: Compare Cars
  */
+
+// Dynamic ad-hoc comparison: /compare/?a=variant-slug&b=variant-slug
+$cmp_a = isset( $_GET['a'] ) ? sanitize_title( wp_unslash( $_GET['a'] ) ) : '';
+$cmp_b = isset( $_GET['b'] ) ? sanitize_title( wp_unslash( $_GET['b'] ) ) : '';
+
+if ( $cmp_a && $cmp_b ) {
+    status_header( 200 );
+    get_header();
+    ?>
+    <main class="ng-main ng-compare-hub">
+      <section class="ng-section">
+        <div class="ng-container ng-container--wide">
+          <h1 class="ng-compare-hub__title">Vehicle Comparison</h1>
+          <?php echo do_shortcode( '[ng_compare variant_ids="' . esc_attr( $cmp_a . ',' . $cmp_b ) . '"]' ); ?>
+          <p class="ng-compare-hub__back"><a href="/compare/" class="ng-link">← Back to Compare</a></p>
+        </div>
+      </section>
+    </main>
+    <?php
+    get_footer();
+    return;
+}
+
 global $wp_query;
 $wp_query->is_404 = false;
 status_header( 200 );

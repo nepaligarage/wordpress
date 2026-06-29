@@ -2077,3 +2077,59 @@ input, select, textarea, button { font-family: inherit; font-size: inherit; }
     .ng-event-single__content,
     .ng-event-sidebar-card { padding: 20px; }
 }
+
+/* ── Compare Tray ─────────────────────────────── */
+.ng-compare-tray {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--ng-white);
+  box-shadow: var(--ng-shadow-lg);
+  border-top: 2px solid var(--ng-red);
+  z-index: 1100;
+  transform: translateY(100%);
+  transition: transform var(--ng-transition);
+  padding: 12px 16px 16px;
+}
+.ng-compare-tray.is-open { transform: translateY(0); }
+.ng-compare-tray__inner { max-width: 960px; margin: 0 auto; }
+.ng-compare-tray__header {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+}
+.ng-compare-tray__count {
+  background: var(--ng-red); color: #fff;
+  font-size: .75rem; font-weight: 700;
+  border-radius: 999px; padding: 2px 8px;
+}
+.ng-compare-tray__title { font-weight: 600; flex: 1; }
+.ng-compare-tray__clear {
+  font-size: .8rem; color: var(--ng-text-muted);
+  background: none; border: none; cursor: pointer; padding: 0;
+}
+.ng-compare-tray__slots {
+  display: flex; gap: 12px; margin-bottom: 12px;
+}
+.ng-compare-tray__slot {
+  flex: 1; border: 1.5px dashed var(--ng-gray-200);
+  border-radius: var(--ng-radius); padding: 8px;
+  display: flex; align-items: center; gap: 8px;
+  min-height: 56px;
+}
+.ng-compare-tray__slot.is-filled { border-style: solid; border-color: var(--ng-gray-300); }
+.ng-compare-tray__slot-thumb {
+  width: 44px; height: 36px; object-fit: cover;
+  border-radius: 4px; flex-shrink: 0;
+}
+.ng-compare-tray__slot-label { font-size: .85rem; font-weight: 500; flex: 1; }
+.ng-compare-tray__slot-empty { font-size: .8rem; color: var(--ng-text-muted); }
+.ng-compare-tray__slot-remove {
+  background: none; border: none; cursor: pointer;
+  color: var(--ng-text-muted); font-size: 1.1rem; line-height: 1;
+  flex-shrink: 0;
+}
+.ng-compare-tray__go[aria-disabled="true"] {
+  opacity: .45; pointer-events: none;
+}
+@media (min-width: 640px) {
+  .ng-compare-tray { padding: 16px 24px 20px; }
+  .ng-compare-tray__slot-thumb { width: 56px; height: 44px; }
+}

@@ -54,6 +54,15 @@ add_action( 'wp_enqueue_scripts', function () {
     // Nav + mobile menu
     wp_enqueue_script( 'ng-nav', NGT_URI . '/assets/js/nav.js', [], NGT_VERSION, true );
 
+    // Compare tray (all pages)
+    wp_enqueue_script(
+        'ng-compare',
+        get_template_directory_uri() . '/assets/js/compare.js',
+        array(),
+        '1.0.0',
+        true
+    );
+
     // Auth modal (all pages)
     wp_enqueue_script( 'ng-auth', NGT_URI . '/assets/js/auth.js', [ 'supabase-js' ], NGT_VERSION, true );
 

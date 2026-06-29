@@ -305,7 +305,10 @@ get_header();
                             data-compare-url="<?php echo esc_url( $default_compare_url ); ?>"
                             data-brand-slug="<?php echo esc_attr( $brand['slug'] ?? '' ); ?>"
                             data-model-slug="<?php echo esc_attr( $model['slug'] ?? '' ); ?>"
-                            data-model-name="<?php echo esc_attr( trim( ( $brand['name'] ?? '' ) . ' ' . ( $model['name'] ?? '' ) ) ); ?>">
+                            data-model-name="<?php echo esc_attr( trim( ( $brand['name'] ?? '' ) . ' ' . ( $model['name'] ?? '' ) ) ); ?>"
+                            data-variant-slug="<?php echo esc_attr( $active['slug'] ?? '' ); ?>"
+                            data-price="<?php echo esc_attr( $active_price['label'] ?? '' ); ?>"
+                            data-thumb="<?php echo esc_url( $hero_image_url ); ?>">
                         Add to Compare
                     </button>
                     <?php if ( $brochure_url ) : ?>
