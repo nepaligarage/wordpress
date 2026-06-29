@@ -6,6 +6,40 @@
 
 ---
 
+## 2026-06-29 — Session: Phase 2 — My Garage (owner logbook) ✅
+
+### Summary
+Filled the four gaps in the already-live (but zero-row) **free owner logbook**: vehicle **photo upload**, **video links**, recurring **tax/renewal obligations** (multi-country, Nepal-seeded), and an aggregated in-dashboard **Upcoming & Overdue** view. No outbound notifications — reminders are purely visual (due-soon/overdue badges). All logbook data flows through the browser Supabase SDK under `auth.uid() = user_id` RLS; photos stay in the **private** `vehicle-photos` bucket served by signed URLs.
+
+### What shipped
+| Change | File | Detail |
+|--------|------|--------|
+| Schema (migration) | `docs/migrations/2026-06-29-my-garage-owner-logbook.sql` | `user_vehicles` += `videos jsonb`, `country_code text`; new `vehicle_obligations` (RLS `_own`, `ng_touch_updated_at` trigger, due-date index); new `obligation_templates` (anon-read) seeded with 5 Nepal defaults (yearly tax, road tax, insurance, pollution, registration) |
+| Photo upload | `dashboard.js` | Vehicle insert → `.select('id').single()` → upload files to `vehicle-photos/{uid}/{vehicleId}/…` → store paths in `photos` jsonb; cards hydrate via `createSignedUrls` (1h) |
+| Video links | `page-dashboard.php`, `dashboard.js` | Repeatable URL+title rows in Add-Vehicle modal; `collectVideos()` → `videos` jsonb `{url,title,provider}`; rendered as chips on cards |
+| Tax & Renewals tab | `page-dashboard.php`, `dashboard.js` | New nav tab + panel + Add/Mark-Paid modal; type select populated from `obligation_templates` by vehicle `country_code`; `next_due_date` auto-computed (last paid + period months); status badges reuse `ng-doc-card--valid/--warning/--expired` |
+| Upcoming & Overdue | `page-dashboard.php`, `dashboard.js` | `loadUpcoming()` merges `documents.expiry_date` + `maintenance_logs.next_due_date` + `vehicle_obligations.next_due_date`, filters to within each item's reminder window, sorts soonest-first |
+| Styles | `assets/css/dashboard.css` | Card photo strip, video chips, video-row inputs, obligation sub-line, Upcoming panel |
+| Cache-bust | `functions.php` | `NGT_VERSION` 1.0.0 → 1.1.0 |
+
+### Verified
+- Migration applied via `psql` (direct connection): `videos`/`country_code` columns present, `vehicle_obligations` + `vehicle_obligations_own` policy present, 5 NP `obligation_templates` seeded.
+- `dashboard.js` passes `node --check`.
+
+### Notes / guardrails
+- Seeded obligation templates are **owner-confirmable `estimated` defaults** (periods only, no legal amounts) — UI hint says to confirm rates/dates with the local authority.
+- Multi-country is Nepal-first + `country_code`-aware; other countries can be seeded into `obligation_templates` without a rebuild.
+
+### Deferred (acknowledged, separate plans)
+- Editorial `/team/` Supabase workspace (create vehicles / upload media / post launch blogs).
+- Periodic content + social automation (tax/discount/loan/exchange/event topics, draft-only).
+- Outbound reminders (email/WhatsApp/SMS) — only if the in-dashboard view proves insufficient.
+
+### Next
+- Live verification at `/dashboard/`: add vehicle w/ photos + video, add an overdue obligation, confirm RLS isolation with a 2nd test user.
+
+---
+
 ## 2026-06-29 — Session: Phase C — Finance / EMI System ✅
 
 ### Summary

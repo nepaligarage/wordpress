@@ -25,6 +25,10 @@ get_header();
                 <svg viewBox="0 0 24 24" fill="none"><path d="M14 3H6a2 2 0 00-2 2v14a2 2 0 002 2h12a2 2 0 002-2V9l-6-6z" stroke="currentColor" stroke-width="1.5"/><path d="M14 3v6h6M9 13h6M9 17h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Documents
             </a>
+            <a href="#taxes" class="ng-dash-nav__item" data-tab="taxes">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/></svg>
+                Tax &amp; Renewals
+            </a>
             <a href="#profile" class="ng-dash-nav__item" data-tab="profile">
                 <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4.418 3.582-8 8-8s8 3.582 8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 Profile
@@ -40,6 +44,7 @@ get_header();
                 <h1>My Vehicles</h1>
                 <button class="ng-btn ng-btn--primary ng-btn--sm" id="ng-add-vehicle-btn">+ Add Vehicle</button>
             </div>
+            <div id="ng-upcoming" class="ng-upcoming" hidden></div>
             <div id="ng-vehicles-list" class="ng-vehicle-list">
                 <div class="ng-loading">Loading your vehicles…</div>
             </div>
@@ -79,6 +84,19 @@ get_header();
             <div class="ng-vehicle-selector" id="ng-doc-vehicle-selector"></div>
             <div id="ng-doc-list" class="ng-doc-grid">
                 <p class="ng-empty-state">Select a vehicle to view its documents.</p>
+            </div>
+        </section>
+
+        <!-- ── Tax & Renewals ──────────────────────────── -->
+        <section class="ng-dash-panel" id="ng-panel-taxes" data-panel="taxes" hidden>
+            <div class="ng-dash-panel__header">
+                <h1>Tax &amp; Renewals</h1>
+                <button class="ng-btn ng-btn--primary ng-btn--sm" id="ng-add-oblig-btn">+ Add / Mark Paid</button>
+            </div>
+            <p class="ng-field-hint" style="margin:-8px 0 12px;">Track recurring obligations — yearly vehicle tax, road tax, insurance, pollution. Defaults are starting points; confirm rates and dates with your local authority.</p>
+            <div class="ng-vehicle-selector" id="ng-oblig-vehicle-selector"></div>
+            <div id="ng-oblig-list" class="ng-doc-grid">
+                <p class="ng-empty-state">Select a vehicle to view its tax &amp; renewal obligations.</p>
             </div>
         </section>
 
@@ -190,9 +208,36 @@ get_header();
                 </div>
             </div>
 
+            <div class="ng-form-row">
+                <div class="ng-form-group">
+                    <label for="ng-v-name">Nickname (optional)</label>
+                    <input type="text" id="ng-v-name" name="custom_name" placeholder="My daily driver">
+                </div>
+                <div class="ng-form-group">
+                    <label for="ng-v-country">Country</label>
+                    <select id="ng-v-country" name="country_code">
+                        <option value="NP" selected>Nepal</option>
+                        <option value="IN">India</option>
+                        <option value="AE">UAE</option>
+                        <option value="AU">Australia</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="US">United States</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="ng-form-group">
-                <label for="ng-v-name">Nickname (optional)</label>
-                <input type="text" id="ng-v-name" name="custom_name" placeholder="My daily driver">
+                <label for="ng-v-photos">Photos (optional)</label>
+                <input type="file" id="ng-v-photos" name="photos" accept="image/*" multiple>
+                <p class="ng-field-hint">Add photos of your vehicle. Stored privately — only you can see them.</p>
+            </div>
+
+            <div class="ng-form-group">
+                <label>Video links (optional)</label>
+                <div id="ng-v-videos"></div>
+                <button type="button" class="ng-link" id="ng-v-add-video" style="font-size:.85rem;">+ Add a video link</button>
+                <p class="ng-field-hint">Paste a YouTube or other video URL — links only, no upload.</p>
             </div>
 
             <div class="ng-auth-error" id="ng-vehicle-error" hidden></div>
@@ -355,6 +400,53 @@ get_header();
             </div>
             <div class="ng-auth-error" id="ng-doc-error" hidden></div>
             <button type="submit" class="ng-btn ng-btn--primary ng-btn--full">Save Document</button>
+        </form>
+    </div>
+</div>
+
+<!-- ── Add Obligation Modal ───────────────────────────────────────────────── -->
+<div class="ng-modal-overlay" id="ng-oblig-modal-overlay" aria-hidden="true">
+    <div class="ng-modal" role="dialog" aria-modal="true">
+        <button class="ng-modal__close" id="ng-oblig-modal-close" aria-label="Close">&times;</button>
+        <h2 class="ng-modal__title">Tax / Renewal</h2>
+        <form id="ng-oblig-form" class="ng-form">
+            <div class="ng-form-group">
+                <label for="ng-o-type">Obligation</label>
+                <select id="ng-o-type" name="obligation_type" required>
+                    <option value="">Select…</option>
+                </select>
+            </div>
+            <div class="ng-form-group" id="ng-o-label-group" hidden>
+                <label for="ng-o-label">Label</label>
+                <input type="text" id="ng-o-label" name="label" placeholder="e.g. Annual road tax">
+            </div>
+            <div class="ng-form-row">
+                <div class="ng-form-group">
+                    <label for="ng-o-paid">Last Paid Date</label>
+                    <input type="date" id="ng-o-paid" name="last_paid_date">
+                </div>
+                <div class="ng-form-group">
+                    <label for="ng-o-period">Renews Every (months)</label>
+                    <input type="number" id="ng-o-period" name="period_months" value="12" min="1" required>
+                </div>
+            </div>
+            <div class="ng-form-row">
+                <div class="ng-form-group">
+                    <label for="ng-o-amount">Amount Paid (optional)</label>
+                    <input type="number" id="ng-o-amount" name="amount_paid" placeholder="5000" min="0" step="0.01">
+                </div>
+                <div class="ng-form-group">
+                    <label for="ng-o-next">Next Due</label>
+                    <input type="date" id="ng-o-next" name="next_due_date" class="ng-input--disabled" readonly>
+                    <p class="ng-field-hint">Auto-calculated from last paid + period.</p>
+                </div>
+            </div>
+            <div class="ng-form-group">
+                <label for="ng-o-notes">Notes (optional)</label>
+                <textarea id="ng-o-notes" name="notes" rows="2" placeholder="Reference number, office, etc."></textarea>
+            </div>
+            <div class="ng-auth-error" id="ng-oblig-error" hidden></div>
+            <button type="submit" class="ng-btn ng-btn--primary ng-btn--full">Save</button>
         </form>
     </div>
 </div>

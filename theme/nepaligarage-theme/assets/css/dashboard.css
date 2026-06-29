@@ -262,3 +262,102 @@ body.page-template-page-dashboard .ng-footer { margin-top: 0; }
     .ng-log-item { grid-template-columns: auto 1fr; }
     .ng-log-item__date, .ng-log-item__cost { display: none; }
 }
+
+/* ── Vehicle card media (photos + video chips) ───────────────────────────── */
+.ng-garage-card__media { background: var(--ng-gray-100); }
+.ng-garage-card__photos {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+}
+.ng-garage-card__photos img {
+    height: 120px;
+    width: auto;
+    flex: 0 0 auto;
+    object-fit: cover;
+    display: block;
+}
+.ng-garage-card__videos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 16px 0;
+}
+.ng-video-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: .75rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #EEF2FF;
+    color: var(--ng-blue);
+    text-decoration: none;
+    border: 1px solid var(--ng-gray-100);
+}
+.ng-video-chip:hover { background: var(--ng-blue); color: var(--ng-white); }
+
+/* ── Video-link rows (Add Vehicle modal) ─────────────────────────────────── */
+.ng-video-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr auto;
+    gap: 8px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+.ng-video-row input { width: 100%; }
+.ng-v-video-remove { font-size: 1.2rem; line-height: 1; color: var(--ng-red); }
+
+/* ── Doc card sub-line (reused for obligations) ──────────────────────────── */
+.ng-doc-card__sub { font-size: .78rem; color: var(--ng-text-muted); margin-bottom: 6px; }
+
+/* ── Upcoming & Overdue panel ────────────────────────────────────────────── */
+.ng-upcoming {
+    background: var(--ng-white);
+    border: 1px solid var(--ng-gray-100);
+    border-radius: var(--ng-radius-lg);
+    box-shadow: var(--ng-shadow);
+    padding: 16px 18px;
+    margin-bottom: 20px;
+}
+.ng-upcoming__title {
+    font-size: .8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ng-text-muted);
+    margin-bottom: 10px;
+}
+.ng-upcoming__list { display: flex; flex-direction: column; gap: 6px; }
+.ng-upcoming__item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: var(--ng-radius);
+    border-left: 3px solid var(--ng-gray-100);
+    background: var(--ng-gray-50, #F8FAFC);
+    font-size: .85rem;
+}
+.ng-upcoming__item--overdue { border-left-color: var(--ng-red); }
+.ng-upcoming__item--soon    { border-left-color: #D97706; }
+.ng-upcoming__item--ok      { border-left-color: #16A34A; }
+.ng-upcoming__kind {
+    font-size: .68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    color: var(--ng-text-muted);
+}
+.ng-upcoming__label { font-weight: 600; color: var(--ng-text); }
+.ng-upcoming__when { font-family: var(--ng-font-mono); font-size: .8rem; font-weight: 700; }
+.ng-upcoming__item--overdue .ng-upcoming__when { color: var(--ng-red); }
+.ng-upcoming__item--soon .ng-upcoming__when    { color: #D97706; }
+
+@media (max-width: 480px) {
+    .ng-video-row { grid-template-columns: 1fr auto; }
+    .ng-upcoming__item { grid-template-columns: 1fr auto; }
+    .ng-upcoming__kind { display: none; }
+}

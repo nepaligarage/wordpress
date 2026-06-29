@@ -68,12 +68,13 @@
         if (name === 'maintenance') buildVehicleSelector('maint');
         if (name === 'fuel')        buildVehicleSelector('fuel');
         if (name === 'documents')   buildVehicleSelector('doc');
+        if (name === 'taxes')       buildVehicleSelector('oblig');
         if (name === 'profile')     loadProfile();
     }
 
     // Activate from URL hash
     const hash = (window.location.hash || '#vehicles').slice(1);
-    const validTabs = ['vehicles', 'maintenance', 'fuel', 'documents', 'profile'];
+    const validTabs = ['vehicles', 'maintenance', 'fuel', 'documents', 'taxes', 'profile'];
     if (validTabs.includes(hash)) switchTab(hash);
 
     // ── Vehicles ──────────────────────────────────────────────────────────────
@@ -94,6 +95,7 @@
 
         vehicles = data || [];
         renderVehicleList(list, vehicles);
+        loadUpcoming();
     }
 
     function renderVehicleList(container, items) {
@@ -106,6 +108,9 @@
         container.innerHTML = cards + addBtn;
 
         document.getElementById('ng-add-vehicle-btn2')?.addEventListener('click', openVehicleModal);
+
+        // Hydrate media (signed photo URLs + video chips) per card
+        items.forEach(hydrateVehicleMedia);
     }
 
     function vehicleCard(v) {
@@ -117,6 +122,7 @@
 
         return `
         <div class="ng-garage-card" data-vehicle-id="${esc(v.id)}">
+            <div class="ng-garage-card__media" data-media-for="${esc(v.id)}" hidden></div>
             <div class="ng-garage-card__header">
                 <div class="ng-garage-card__make">${esc(brand)}</div>
                 <div class="ng-garage-card__name">${esc(name)}</div>
@@ -130,6 +136,37 @@
                 </div>
             </div>
         </div>`;
+    }
+
+    // Resolve photos (private bucket → signed URLs) + video chips into a card
+    async function hydrateVehicleMedia(v) {
+        const box = document.querySelector(`.ng-garage-card__media[data-media-for="${cssEsc(v.id)}"]`);
+        if (!box) return;
+
+        let html = '';
+
+        const photos = Array.isArray(v.photos) ? v.photos.filter(Boolean) : [];
+        if (photos.length) {
+            const { data } = await sb.storage.from('vehicle-photos').createSignedUrls(photos, 3600);
+            const urls = (data || []).filter(d => d && d.signedUrl);
+            if (urls.length) {
+                html += '<div class="ng-garage-card__photos">' +
+                    urls.map(d => `<img src="${esc(d.signedUrl)}" alt="" loading="lazy">`).join('') +
+                    '</div>';
+            }
+        }
+
+        const videos = Array.isArray(v.videos) ? v.videos.filter(x => x && x.url) : [];
+        if (videos.length) {
+            html += '<div class="ng-garage-card__videos">' +
+                videos.map(vid => `<a class="ng-video-chip" href="${esc(vid.url)}" target="_blank" rel="noopener noreferrer">▶ ${esc(vid.title || vid.provider || 'Video')}</a>`).join('') +
+                '</div>';
+        }
+
+        if (html) {
+            box.innerHTML = html;
+            box.hidden = false;
+        }
     }
 
     // ── Vehicle modal ─────────────────────────────────────────────────────────
@@ -153,7 +190,49 @@
         vehicleOverlay.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
         vehicleForm?.reset();
+        const vids = document.getElementById('ng-v-videos');
+        if (vids) vids.innerHTML = '';
         if (vehicleErr) vehicleErr.hidden = true;
+    }
+
+    // ── Video-link rows (Add Vehicle modal) ───────────────────────────────────
+
+    document.getElementById('ng-v-add-video')?.addEventListener('click', function () {
+        addVideoRow();
+    });
+
+    function addVideoRow() {
+        const wrap = document.getElementById('ng-v-videos');
+        if (!wrap) return;
+        const row = document.createElement('div');
+        row.className = 'ng-video-row';
+        row.innerHTML =
+            '<input type="url" class="ng-v-video-url" placeholder="https://youtube.com/watch?v=…">' +
+            '<input type="text" class="ng-v-video-title" placeholder="Title (optional)">' +
+            '<button type="button" class="ng-link ng-v-video-remove" aria-label="Remove">&times;</button>';
+        row.querySelector('.ng-v-video-remove').addEventListener('click', function () { row.remove(); });
+        wrap.appendChild(row);
+    }
+
+    // Collect entered video links into the videos jsonb shape
+    function collectVideos() {
+        const rows = document.querySelectorAll('#ng-v-videos .ng-video-row');
+        const out = [];
+        rows.forEach(function (row) {
+            const url = row.querySelector('.ng-v-video-url')?.value.trim();
+            if (!url) return;
+            const title = row.querySelector('.ng-v-video-title')?.value.trim() || null;
+            out.push({ url: url, title: title, provider: videoProvider(url) });
+        });
+        return out;
+    }
+
+    function videoProvider(url) {
+        if (/youtu\.?be/i.test(url))   return 'youtube';
+        if (/vimeo\.com/i.test(url))   return 'vimeo';
+        if (/facebook\.com/i.test(url)) return 'facebook';
+        if (/tiktok\.com/i.test(url))  return 'tiktok';
+        return 'link';
     }
 
     async function loadBrandsIntoForm() {
@@ -207,24 +286,56 @@
                 color:                fd.get('color') || null,
                 purchase_date:        fd.get('purchase_date') || null,
                 current_odometer_km:  parseInt(fd.get('current_odometer_km')) || 0,
+                country_code:         fd.get('country_code') || 'NP',
+                videos:               collectVideos(),
             };
 
-            const { error } = await sb.from('user_vehicles').insert(payload);
+            const { data: inserted, error } = await sb
+                .from('user_vehicles')
+                .insert(payload)
+                .select('id')
+                .single();
 
             if (error) {
                 if (vehicleErr) { vehicleErr.textContent = error.message; vehicleErr.hidden = false; }
-            } else {
-                closeVehicleModal();
-                await loadVehicles();
+                submit.disabled = false;
+                return;
             }
+
+            // Upload photos to the private bucket, then store their paths
+            const files = document.getElementById('ng-v-photos')?.files;
+            if (files && files.length) {
+                const paths = await uploadVehiclePhotos(inserted.id, files);
+                if (paths.length) {
+                    await sb.from('user_vehicles').update({ photos: paths }).eq('id', inserted.id);
+                }
+            }
+
+            closeVehicleModal();
+            await loadVehicles();
             submit.disabled = false;
         });
+    }
+
+    // Upload selected images to vehicle-photos/{uid}/{vehicleId}/… → return stored paths
+    async function uploadVehiclePhotos(vehicleId, fileList) {
+        const paths = [];
+        for (let i = 0; i < fileList.length; i++) {
+            const file = fileList[i];
+            const safe = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+            const path = `${user.id}/${vehicleId}/${i}-${safe}`;
+            const { error } = await sb.storage
+                .from('vehicle-photos')
+                .upload(path, file, { upsert: false, contentType: file.type || undefined });
+            if (!error) paths.push(path);
+        }
+        return paths;
     }
 
     // ── Vehicle selector (for maintenance/fuel/docs tabs) ─────────────────────
 
     function buildVehicleSelector(context) {
-        const selectorId = { maint: 'ng-maint-vehicle-selector', fuel: 'ng-fuel-vehicle-selector', doc: 'ng-doc-vehicle-selector' }[context];
+        const selectorId = { maint: 'ng-maint-vehicle-selector', fuel: 'ng-fuel-vehicle-selector', doc: 'ng-doc-vehicle-selector', oblig: 'ng-oblig-vehicle-selector' }[context];
         const el = document.getElementById(selectorId);
         if (!el) return;
 
@@ -248,6 +359,7 @@
                 if (context === 'maint') loadMaintenanceLogs(activeVehicleId);
                 if (context === 'fuel')  loadFuelLogs(activeVehicleId);
                 if (context === 'doc')   loadDocuments(activeVehicleId);
+                if (context === 'oblig') loadObligations(activeVehicleId);
             });
         });
 
@@ -258,6 +370,10 @@
             if (context === 'maint') loadMaintenanceLogs(activeVehicleId);
             if (context === 'fuel')  loadFuelLogs(activeVehicleId);
             if (context === 'doc')   loadDocuments(activeVehicleId);
+            if (context === 'oblig') loadObligations(activeVehicleId);
+        } else if (vehicles.length && activeVehicleId) {
+            // Re-entering a tab with an already-selected vehicle
+            if (context === 'oblig') loadObligations(activeVehicleId);
         }
     }
 
@@ -513,6 +629,239 @@
         });
     }
 
+    // ── Tax & Renewal obligations ─────────────────────────────────────────────
+
+    const OBLIG_TYPE_LABELS = {
+        yearly_vehicle_tax:    'Yearly Vehicle Tax',
+        road_tax:              'Road / Transport Tax',
+        insurance:             'Insurance Renewal',
+        pollution:             'Pollution (Green Sticker)',
+        registration_renewal: 'Registration Renewal',
+        custom:                'Custom',
+    };
+
+    function activeVehicle() {
+        return vehicles.find(v => v.id === activeVehicleId) || null;
+    }
+
+    async function loadObligations(vehicleId) {
+        const grid = document.getElementById('ng-oblig-list');
+        if (!grid) return;
+        grid.innerHTML = '<div class="ng-loading">Loading…</div>';
+
+        const { data } = await sb
+            .from('vehicle_obligations')
+            .select('*')
+            .eq('user_vehicle_id', vehicleId)
+            .eq('is_active', true)
+            .order('next_due_date', { ascending: true });
+
+        if (!data?.length) {
+            grid.innerHTML = '<p class="ng-empty-state">No tax or renewal obligations yet. Add yearly tax, insurance, or pollution to start tracking due dates.</p>';
+            return;
+        }
+
+        const now = new Date();
+        grid.innerHTML = data.map(function (o) {
+            const label = o.label || OBLIG_TYPE_LABELS[o.obligation_type] || o.obligation_type;
+            let statusClass = '', dueStr = '';
+            if (o.next_due_date) {
+                const due = new Date(o.next_due_date);
+                const daysLeft = Math.ceil((due - now) / 86400000);
+                if (daysLeft < 0) {
+                    statusClass = 'ng-doc-card--expired';
+                    dueStr = `Overdue since ${o.next_due_date}`;
+                } else if (daysLeft <= 30) {
+                    statusClass = 'ng-doc-card--warning';
+                    dueStr = `Due in ${daysLeft} days`;
+                } else {
+                    statusClass = 'ng-doc-card--valid';
+                    dueStr = `Next due ${o.next_due_date}`;
+                }
+            }
+            const amount = o.amount_paid ? `${esc(o.currency || 'NPR')} ${Number(o.amount_paid).toLocaleString()}` : '';
+            const paid   = o.last_paid_date ? `Last paid ${esc(o.last_paid_date)}` : 'Not yet paid';
+            return `
+            <div class="ng-doc-card ${statusClass}">
+                <div class="ng-doc-card__type">Every ${o.period_months} mo</div>
+                <div class="ng-doc-card__title">${esc(label)}</div>
+                <div class="ng-doc-card__sub">${paid}${amount ? ' · ' + amount : ''}</div>
+                ${dueStr ? `<div class="ng-doc-card__expiry">${esc(dueStr)}</div>` : ''}
+            </div>`;
+        }).join('');
+    }
+
+    const obligOverlay = document.getElementById('ng-oblig-modal-overlay');
+    const obligForm    = document.getElementById('ng-oblig-form');
+    const obligErr     = document.getElementById('ng-oblig-error');
+
+    document.getElementById('ng-add-oblig-btn')?.addEventListener('click', async function () {
+        if (!activeVehicleId) { alert('Please select a vehicle first.'); return; }
+        await populateObligationTypes();
+        if (obligErr) obligErr.hidden = true;
+        obligOverlay.classList.add('is-open'); obligOverlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+    });
+    document.getElementById('ng-oblig-modal-close')?.addEventListener('click', function () {
+        obligOverlay.classList.remove('is-open'); document.body.style.overflow = '';
+    });
+    obligOverlay?.addEventListener('click', function (e) {
+        if (e.target === obligOverlay) { obligOverlay.classList.remove('is-open'); document.body.style.overflow = ''; }
+    });
+
+    // Populate the obligation-type select from country templates (+ Custom)
+    async function populateObligationTypes() {
+        const sel = document.getElementById('ng-o-type');
+        if (!sel) return;
+        const v = activeVehicle();
+        const country = (v && v.country_code) || 'NP';
+
+        const { data } = await sb
+            .from('obligation_templates')
+            .select('obligation_type,label,default_period_months,display_order')
+            .eq('country_code', country)
+            .order('display_order', { ascending: true });
+
+        obligTemplates = {};
+        let opts = '<option value="">Select…</option>';
+        (data || []).forEach(function (t) {
+            obligTemplates[t.obligation_type] = t;
+            opts += `<option value="${esc(t.obligation_type)}">${esc(t.label)}</option>`;
+        });
+        opts += '<option value="custom">Custom…</option>';
+        sel.innerHTML = opts;
+    }
+
+    let obligTemplates = {};
+
+    // Type change → prefill period, toggle custom label field
+    document.getElementById('ng-o-type')?.addEventListener('change', function () {
+        const type = this.value;
+        const labelGroup = document.getElementById('ng-o-label-group');
+        const periodInput = document.getElementById('ng-o-period');
+        if (labelGroup) labelGroup.hidden = (type !== 'custom');
+        const tpl = obligTemplates[type];
+        if (tpl && periodInput) periodInput.value = tpl.default_period_months || 12;
+        recomputeNextDue();
+    });
+
+    document.getElementById('ng-o-paid')?.addEventListener('change', recomputeNextDue);
+    document.getElementById('ng-o-period')?.addEventListener('input', recomputeNextDue);
+
+    function recomputeNextDue() {
+        const paid   = document.getElementById('ng-o-paid')?.value;
+        const months = parseInt(document.getElementById('ng-o-period')?.value);
+        const next   = document.getElementById('ng-o-next');
+        if (!next) return;
+        if (paid && months > 0) {
+            const d = new Date(paid + 'T00:00:00');
+            d.setMonth(d.getMonth() + months);
+            next.value = d.toISOString().slice(0, 10);
+        } else {
+            next.value = '';
+        }
+    }
+
+    if (obligForm) {
+        obligForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const submit = obligForm.querySelector('[type=submit]');
+            submit.disabled = true;
+            if (obligErr) obligErr.hidden = true;
+
+            const fd = new FormData(obligForm);
+            const type = fd.get('obligation_type');
+            const v = activeVehicle();
+            const payload = {
+                user_vehicle_id: activeVehicleId,
+                user_id:         user.id,
+                country_code:    (v && v.country_code) || 'NP',
+                obligation_type: type,
+                label:           type === 'custom' ? (fd.get('label') || 'Custom') : (OBLIG_TYPE_LABELS[type] || null),
+                last_paid_date:  fd.get('last_paid_date') || null,
+                period_months:   parseInt(fd.get('period_months')) || 12,
+                next_due_date:   fd.get('next_due_date') || null,
+                amount_paid:     fd.get('amount_paid') ? parseFloat(fd.get('amount_paid')) : null,
+                notes:           fd.get('notes') || null,
+            };
+
+            const { error } = await sb.from('vehicle_obligations').insert(payload);
+            if (error) {
+                if (obligErr) { obligErr.textContent = error.message; obligErr.hidden = false; }
+            } else {
+                obligOverlay.classList.remove('is-open'); document.body.style.overflow = '';
+                obligForm.reset();
+                document.getElementById('ng-o-label-group').hidden = true;
+                loadObligations(activeVehicleId);
+                loadUpcoming();
+            }
+            submit.disabled = false;
+        });
+    }
+
+    // ── Upcoming & Overdue (aggregated across docs + maintenance + obligations) ─
+
+    async function loadUpcoming() {
+        const box = document.getElementById('ng-upcoming');
+        if (!box || !vehicles.length) return;
+
+        const ids = vehicles.map(v => v.id);
+        const vName = {};
+        vehicles.forEach(v => { vName[v.id] = v.custom_name || v.variant?.model?.name || v.custom_model || 'Vehicle'; });
+
+        const [docs, maint, obligs] = await Promise.all([
+            sb.from('documents').select('user_vehicle_id,title,doc_type,expiry_date,reminder_days').in('user_vehicle_id', ids),
+            sb.from('maintenance_logs').select('user_vehicle_id,maintenance_type,next_due_date').in('user_vehicle_id', ids).not('next_due_date', 'is', null),
+            sb.from('vehicle_obligations').select('user_vehicle_id,obligation_type,label,next_due_date').in('user_vehicle_id', ids).eq('is_active', true).not('next_due_date', 'is', null),
+        ]);
+
+        const items = [];
+        (docs.data || []).forEach(function (d) {
+            if (!d.expiry_date) return;
+            items.push({ vehicle: vName[d.user_vehicle_id], label: d.title || labelize(d.doc_type), date: d.expiry_date, reminder: d.reminder_days || 14, kind: 'Document' });
+        });
+        (maint.data || []).forEach(function (m) {
+            items.push({ vehicle: vName[m.user_vehicle_id], label: labelize(m.maintenance_type), date: m.next_due_date, reminder: 14, kind: 'Service' });
+        });
+        (obligs.data || []).forEach(function (o) {
+            items.push({ vehicle: vName[o.user_vehicle_id], label: o.label || labelize(o.obligation_type), date: o.next_due_date, reminder: 30, kind: 'Tax/Renewal' });
+        });
+
+        const now = new Date();
+        const relevant = items
+            .map(function (it) {
+                const due = new Date(it.date + 'T00:00:00');
+                it.daysLeft = Math.ceil((due - now) / 86400000);
+                return it;
+            })
+            .filter(it => it.daysLeft <= (it.reminder || 14))   // overdue or within its reminder window
+            .sort((a, b) => a.daysLeft - b.daysLeft);
+
+        if (!relevant.length) { box.hidden = true; box.innerHTML = ''; return; }
+
+        box.innerHTML =
+            '<div class="ng-upcoming__title">Upcoming &amp; Overdue</div>' +
+            '<div class="ng-upcoming__list">' +
+            relevant.map(function (it) {
+                let cls = 'ng-upcoming__item--ok', when;
+                if (it.daysLeft < 0)       { cls = 'ng-upcoming__item--overdue'; when = `Overdue ${Math.abs(it.daysLeft)}d`; }
+                else if (it.daysLeft <= 7) { cls = 'ng-upcoming__item--soon';    when = `${it.daysLeft}d left`; }
+                else                       { cls = 'ng-upcoming__item--soon';    when = `${it.daysLeft}d left`; }
+                return `
+                <div class="ng-upcoming__item ${cls}">
+                    <span class="ng-upcoming__kind">${esc(it.kind)}</span>
+                    <span class="ng-upcoming__label">${esc(it.label)} — ${esc(it.vehicle)}</span>
+                    <span class="ng-upcoming__when">${esc(when)}</span>
+                </div>`;
+            }).join('') +
+            '</div>';
+        box.hidden = false;
+    }
+
+    function labelize(s) {
+        return String(s || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
     // ── Profile ───────────────────────────────────────────────────────────────
 
     async function loadProfile() {
@@ -566,6 +915,12 @@
     function esc(str) {
         if (str == null) return '';
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
+    // Escape a value for safe use inside a CSS attribute selector
+    function cssEsc(str) {
+        if (window.CSS && CSS.escape) return CSS.escape(String(str));
+        return String(str).replace(/["\\\]]/g, '\\$&');
     }
 
     function today() {
