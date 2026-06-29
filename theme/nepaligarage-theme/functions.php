@@ -97,8 +97,11 @@ add_action( 'wp_enqueue_scripts', function () {
         wp_enqueue_script( 'ng-filter', NGT_URI . '/assets/js/filter.js', [], NGT_VERSION, true );
     }
 
-    // Homepage hero tabbed search (Find / Estimate / Compare)
-    if ( is_front_page() ) {
+    // Homepage hero tabbed search (Find / Estimate / Compare).
+    // Note: this install has show_on_front=page with page_on_front=0, so the root
+    // renders front-page.php as the blog home — is_front_page() is false there but
+    // is_home() is true. Gate on both so the widget loads regardless of that config.
+    if ( is_front_page() || is_home() ) {
         wp_enqueue_script( 'ng-home', NGT_URI . '/assets/js/home.js', [], NGT_VERSION, true );
         wp_localize_script( 'ng-home', 'ngHome', [
             'catalog'     => ngt_compare_catalog(),
