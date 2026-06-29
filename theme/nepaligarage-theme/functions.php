@@ -1,7 +1,7 @@
 <?php
 defined( 'ABSPATH' ) || exit;
 
-define( 'NGT_VERSION', '1.3.0' );
+define( 'NGT_VERSION', '1.4.0' );
 define( 'NGT_DIR',     get_template_directory() );
 define( 'NGT_URI',     get_template_directory_uri() );
 
@@ -95,6 +95,18 @@ add_action( 'wp_enqueue_scripts', function () {
     // New-cars listing filter
     if ( is_page( 'new-cars' ) ) {
         wp_enqueue_script( 'ng-filter', NGT_URI . '/assets/js/filter.js', [], NGT_VERSION, true );
+    }
+
+    // Homepage hero tabbed search (Find / Estimate / Compare)
+    if ( is_front_page() ) {
+        wp_enqueue_script( 'ng-home', NGT_URI . '/assets/js/home.js', [], NGT_VERSION, true );
+        wp_localize_script( 'ng-home', 'ngHome', [
+            'catalog'     => ngt_compare_catalog(),
+            'carsBase'    => home_url( '/cars/' ),
+            'newCarsBase' => home_url( '/new-cars/' ),
+            'compareBase' => home_url( '/compare/' ),
+            'estimatorUrl'=> home_url( '/nepal-car-price-estimator/' ),
+        ] );
     }
 
     // Pass config to JS — anon key is safe in browser; all data is RLS-protected

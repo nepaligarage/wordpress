@@ -6,6 +6,42 @@
 
 ---
 
+## 2026-06-29 — Session: Homepage redesign (carwow-inspired) ✅
+
+### Summary
+Rebuilt the homepage information architecture in the spirit of carwow.co.uk — an **original NepaliGarage layout** that borrows carwow's proven section structure (tabbed hero search, browse-by-budget, deal cards, brand grid, reviews/news) while keeping the existing NepaliGarage brand (red `#E02020` + dark slate, Inter/Syncopate) and pulling all data from Supabase. No new design tokens; read-only data; no schema changes. Primary funnel is **find & compare cars**, with a secondary **Owners' Hub** routing owners to the free My Garage tools.
+
+### What shipped
+| Change | File | Detail |
+|--------|------|--------|
+| Tabbed hero search | `front-page.php`, `assets/js/home.js` (new) | Accessible tablist (Find a car / Estimate price / Compare) with `aria-selected` + arrow-key nav; dependent Make→Model dropdowns built from `ngt_compare_catalog()`; routes Find → `/cars/{brand}/{model}/` (or `/new-cars/#brand=` for make-only), Compare → `/compare/?a=&b=`, Estimate → the price estimator |
+| Front-page enqueue | `functions.php` | On `is_front_page()` enqueue `home.js` + `wp_localize_script('ng-home','ngHome',…)` with catalog + cars/new-cars/compare/estimator URLs |
+| Browse by budget | `front-page.php` | New `--gray` section of NPR band cards reusing the existing `#price=` filter hashes consumed by `filter.js` |
+| Owners' Hub | `front-page.php` | New dark-slate section — Track (→`/dashboard/`), List (→`/dashboard/`), Estimate value (→estimator); "List" + "value" carry honest *coming soon* labels (no marketplace/used-valuation backend exists) |
+| Section reorder | `front-page.php` | Hero → Budget → Featured → Comparisons → Trust → Brand → Owners → News → FAQ; old static hero CTAs/filters replaced by the tab widget; "Browse by Type" grid folded into hero quick-chips |
+| Styles | `assets/css/theme.css` | Appended only new component CSS (`.ng-herosearch*`, `.ng-budget-grid/.ng-budget-card`, `.ng-owners*`) + `.ng-screen-reader-text`; existing tokens only; responsive at 720/600px |
+| Cache-bust | `functions.php` | `NGT_VERSION` 1.3.0 → 1.4.0 |
+
+### Verified
+- `home.js` passes `node --check`.
+- `front-page.php`: 9 `<section>` open/close tags balanced; section order confirmed via grep.
+- All referenced CSS classes (`.ng-btn--outline-white`, `.ng-section__header-left`) and tokens (`--ng-red-light`, etc.) exist.
+- PHP not linted locally (no `php` binary); markup balanced and edits well-formed.
+
+### Notes / guardrails
+- Featured cards keep the existing price + **confidence badge + source URL** rendering (`ngt_variant_price_display()` / `ngt_price_badge_html()`) — no bare numbers; budget bands are navigation, not quoted prices.
+- Homepage copy avoids implying features that don't exist: "List your car" and "Estimate market value" are framed as entry points with *coming soon* labels.
+
+### Deferred (acknowledged)
+- Real used-car **listing** flow + browse/search of user listings.
+- Real used-car **market valuation** model (vs. the import customs estimator).
+- Mega-menu header dropdowns / video gallery.
+
+### Next
+- Live verification: hero tabs switch + keyboard-nav; Find/Compare route to real pages; budget cards land filtered; responsive at 1280/768/390.
+
+---
+
 ## 2026-06-29 — Session: Phase 2 — My Garage (owner logbook) ✅
 
 ### Summary

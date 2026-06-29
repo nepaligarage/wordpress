@@ -33,30 +33,64 @@ $comparisons = ngt_supabase_get( 'comparisons', [
             <h1 class="ng-hero__title">Research Better.<br>Buy Smarter.</h1>
             <p class="ng-hero__subtitle">Compare cars, audit specs, check Nepal on-road pricing, and understand ownership tradeoffs before you shortlist anything.</p>
 
-            <div class="ng-hero__ctas">
-                <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-btn ng-btn--red ng-btn--lg">Compare Cars</a>
-                <a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-btn ng-btn--outline ng-btn--lg">Estimate Nepal Price</a>
+            <!-- Tabbed search widget -->
+            <div class="ng-herosearch" role="search">
+                <div class="ng-herosearch__tabs" role="tablist" aria-label="Search NepaliGarage">
+                    <button type="button" class="ng-herosearch__tab is-active" role="tab" id="ng-hstab-find"
+                            aria-selected="true" aria-controls="ng-hspanel-find" data-hstab="find">Find a car</button>
+                    <button type="button" class="ng-herosearch__tab" role="tab" id="ng-hstab-estimate" tabindex="-1"
+                            aria-selected="false" aria-controls="ng-hspanel-estimate" data-hstab="estimate">Estimate price</button>
+                    <button type="button" class="ng-herosearch__tab" role="tab" id="ng-hstab-compare" tabindex="-1"
+                            aria-selected="false" aria-controls="ng-hspanel-compare" data-hstab="compare">Compare</button>
+                </div>
+
+                <!-- Find a car -->
+                <div class="ng-herosearch__panel is-active" role="tabpanel" id="ng-hspanel-find"
+                     aria-labelledby="ng-hstab-find" data-hspanel="find">
+                    <div class="ng-herosearch__row">
+                        <label class="ng-screen-reader-text" for="ng-hs-find-make">Make</label>
+                        <select class="ng-herosearch__select" id="ng-hs-find-make"><option value="">Make</option></select>
+                        <label class="ng-screen-reader-text" for="ng-hs-find-model">Model</label>
+                        <select class="ng-herosearch__select" id="ng-hs-find-model" disabled><option value="">Model</option></select>
+                        <button type="button" class="ng-btn ng-btn--red" id="ng-hs-find-go">Search</button>
+                    </div>
+                    <p class="ng-herosearch__hint">Pick a make and model to jump straight to its Nepal page — or just a make to browse the full lineup.</p>
+                </div>
+
+                <!-- Estimate price -->
+                <div class="ng-herosearch__panel" role="tabpanel" id="ng-hspanel-estimate"
+                     aria-labelledby="ng-hstab-estimate" data-hspanel="estimate" hidden>
+                    <p class="ng-herosearch__lead">Estimate the Nepal on-road price of an imported vehicle — customs duty, VAT and road tax included.</p>
+                    <a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-btn ng-btn--red">Open price estimator →</a>
+                </div>
+
+                <!-- Compare -->
+                <div class="ng-herosearch__panel" role="tabpanel" id="ng-hspanel-compare"
+                     aria-labelledby="ng-hstab-compare" data-hspanel="compare" hidden>
+                    <div class="ng-herosearch__compare">
+                        <div class="ng-herosearch__row">
+                            <label class="ng-screen-reader-text" for="ng-hs-cmp-a-make">First car make</label>
+                            <select class="ng-herosearch__select" id="ng-hs-cmp-a-make"><option value="">Make</option></select>
+                            <label class="ng-screen-reader-text" for="ng-hs-cmp-a-model">First car model</label>
+                            <select class="ng-herosearch__select" id="ng-hs-cmp-a-model" disabled><option value="">Model</option></select>
+                        </div>
+                        <span class="ng-herosearch__vs" aria-hidden="true">vs</span>
+                        <div class="ng-herosearch__row">
+                            <label class="ng-screen-reader-text" for="ng-hs-cmp-b-make">Second car make</label>
+                            <select class="ng-herosearch__select" id="ng-hs-cmp-b-make"><option value="">Make</option></select>
+                            <label class="ng-screen-reader-text" for="ng-hs-cmp-b-model">Second car model</label>
+                            <select class="ng-herosearch__select" id="ng-hs-cmp-b-model" disabled><option value="">Model</option></select>
+                        </div>
+                        <button type="button" class="ng-btn ng-btn--red" id="ng-hs-cmp-go">Compare →</button>
+                    </div>
+                </div>
             </div>
 
-            <div class="ng-hero__filters">
-                <div class="ng-hero__filter-group">
-                    <p class="ng-hero__filter-label">Browse by vehicle type</p>
-                    <div class="ng-hero__type-row">
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#type=car' ) ); ?>" class="ng-hero__search-btn">Cars &amp; SUVs</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#type=bike' ) ); ?>" class="ng-hero__search-btn">Motorcycles &amp; Bikes</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#fuel=ev' ) ); ?>" class="ng-hero__search-btn">Electric Vehicles</a>
-                    </div>
-                </div>
-                <div class="ng-hero__filter-group">
-                    <p class="ng-hero__filter-label">Browse by budget (NPR)</p>
-                    <div class="ng-hero__budget-row">
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=under-5l' ) ); ?>" class="ng-hero__search-btn">Under 5 Lakh</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=5l-15l' ) ); ?>" class="ng-hero__search-btn">5L &ndash; 15L</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=15l-50l' ) ); ?>" class="ng-hero__search-btn">15L &ndash; 50L</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=50l-1cr' ) ); ?>" class="ng-hero__search-btn">50L &ndash; 1 Crore</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/#price=above-1cr' ) ); ?>" class="ng-hero__search-btn">Above 1 Crore</a>
-                    </div>
-                </div>
+            <div class="ng-hero__quickchips">
+                <a href="<?php echo esc_url( home_url( '/new-cars/#type=car' ) ); ?>" class="ng-hero__search-btn">Cars &amp; SUVs</a>
+                <a href="<?php echo esc_url( home_url( '/bikes/' ) ); ?>" class="ng-hero__search-btn">Bikes</a>
+                <a href="<?php echo esc_url( home_url( '/new-cars/#fuel=ev' ) ); ?>" class="ng-hero__search-btn">Electric</a>
+                <a href="<?php echo esc_url( home_url( '/compare/' ) ); ?>" class="ng-hero__search-btn">Compare</a>
             </div>
 
             <div class="ng-hero__trust">
@@ -64,6 +98,36 @@ $comparisons = ngt_supabase_get( 'comparisons', [
                 <span>NPR on-road prices</span>
                 <span>Nepal customs &amp; tax included</span>
             </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── BROWSE BY BUDGET ──────────────────────────────────────────────────────── -->
+<section class="ng-section ng-section--gray">
+    <div class="ng-container">
+        <div class="ng-section__header">
+            <div class="ng-section__header-left">
+                <p class="ng-section__label">Find your fit</p>
+                <h2 data-animate>Browse by budget</h2>
+                <p class="ng-section__intro">On-road price bands in NPR — built with Nepal customs, VAT &amp; road tax.</p>
+            </div>
+            <a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>" class="ng-link--more">All cars →</a>
+        </div>
+        <div class="ng-budget-grid">
+            <?php
+            $budget_bands = [
+                [ 'hash' => 'under-5l',  'top' => 'Under',          'amount' => 'Rs 5 Lakh' ],
+                [ 'hash' => '5l-15l',    'top' => 'Rs 5 – 15',      'amount' => 'Lakh' ],
+                [ 'hash' => '15l-50l',   'top' => 'Rs 15 – 50',     'amount' => 'Lakh' ],
+                [ 'hash' => '50l-1cr',   'top' => 'Rs 50 L – 1',    'amount' => 'Crore' ],
+                [ 'hash' => 'above-1cr', 'top' => 'Above',          'amount' => 'Rs 1 Crore' ],
+            ];
+            foreach ( $budget_bands as $band ) : ?>
+            <a class="ng-budget-card" href="<?php echo esc_url( home_url( '/new-cars/#price=' . $band['hash'] ) ); ?>">
+                <span class="ng-budget-card__top"><?php echo esc_html( $band['top'] ); ?></span>
+                <strong class="ng-budget-card__amount"><?php echo esc_html( $band['amount'] ); ?></strong>
+            </a>
+            <?php endforeach; ?>
         </div>
     </div>
 </section>
@@ -246,34 +310,30 @@ $comparisons = ngt_supabase_get( 'comparisons', [
 </section>
 <?php endif; ?>
 
-<!-- ── BROWSE BY TYPE ────────────────────────────────────────────────────────── -->
-<section class="ng-section ng-section--gray">
+<!-- ── OWNERS' HUB ───────────────────────────────────────────────────────────── -->
+<section class="ng-owners">
     <div class="ng-container">
-        <div class="ng-section__header">
-            <h2 data-animate>Browse by Type</h2>
+        <div class="ng-section__header ng-section__header--center">
+            <p class="ng-section__label ng-owners__label">My Garage — free for owners</p>
+            <h2 data-animate>Already own a vehicle?</h2>
+            <p class="ng-section__intro ng-owners__intro">Track maintenance and renewals, keep your records in one place, and get a sense of what your vehicle is worth.</p>
         </div>
-        <div class="ng-type-grid">
-            <?php
-            $types = [
-                [ 'label' => 'SUV',        'href' => '/new-cars/#type=car',  'icon' => 'M6 30V20l8-10h32l8 10v10H6z',          'wheels' => true ],
-                [ 'label' => 'Sedan',      'href' => '/new-cars/#type=car',  'icon' => 'M8 30V22l6-8h32l6 8v8H8z M14 22h32',   'wheels' => true ],
-                [ 'label' => 'Hatchback',  'href' => '/new-cars/#type=car',  'icon' => 'M10 30V22l8-8h24l8 8v8H10z',           'wheels' => true ],
-                [ 'label' => 'Electric',   'href' => '/new-cars/#fuel=ev',   'icon' => 'M26 6L14 26h12l-4 16L42 22H28L30 6z',  'wheels' => false ],
-                [ 'label' => 'Pickup',     'href' => '/new-cars/#type=car',  'icon' => 'M4 32V22l8-10h18v20H4z M30 32V28h14v4H30z', 'wheels' => true ],
-                [ 'label' => 'Motorcycle', 'href' => '/new-cars/#type=bike', 'icon' => 'M20 24l4-8h6l6 8 M10 32a6 6 0 1012 0 6 6 0 00-12 0z M32 32a6 6 0 1012 0 6 6 0 00-12 0z M16 32h16', 'wheels' => false ],
-            ];
-            foreach ( $types as $type ) : ?>
-            <a href="<?php echo esc_url( home_url( $type['href'] ) ); ?>" class="ng-type-tile">
-                <svg viewBox="0 0 54 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="<?php echo esc_attr( $type['icon'] ); ?>" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
-                    <?php if ( $type['wheels'] ) : ?>
-                    <circle cx="16" cy="33" r="4" stroke="currentColor" stroke-width="2.5"/>
-                    <circle cx="38" cy="33" r="4" stroke="currentColor" stroke-width="2.5"/>
-                    <?php endif; ?>
-                </svg>
-                <span><?php echo esc_html( $type['label'] ); ?></span>
-            </a>
-            <?php endforeach; ?>
+        <div class="ng-owners__grid">
+            <div class="ng-owners__card">
+                <h3 class="ng-owners__card-title">Track your car</h3>
+                <p class="ng-owners__card-text">Log service history, fuel and documents, and get reminders for tax, insurance &amp; pollution renewals — free.</p>
+                <a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="ng-btn ng-btn--red">Open My Garage →</a>
+            </div>
+            <div class="ng-owners__card">
+                <h3 class="ng-owners__card-title">List your car</h3>
+                <p class="ng-owners__card-text">Keep your vehicle details ready in your garage so you can share them when you're set to sell. <span class="ng-owners__soon">Public listings coming soon.</span></p>
+                <a href="<?php echo esc_url( home_url( '/dashboard/' ) ); ?>" class="ng-btn ng-btn--outline-white">Add your vehicle →</a>
+            </div>
+            <div class="ng-owners__card">
+                <h3 class="ng-owners__card-title">Estimate its value</h3>
+                <p class="ng-owners__card-text">Use our Nepal price tool to gauge an approximate import/market value as a starting reference. <span class="ng-owners__soon">Used-value model coming soon.</span></p>
+                <a href="<?php echo esc_url( home_url( '/nepal-car-price-estimator/' ) ); ?>" class="ng-btn ng-btn--outline-white">Estimate value →</a>
+            </div>
         </div>
     </div>
 </section>
