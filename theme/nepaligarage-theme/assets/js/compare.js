@@ -157,6 +157,10 @@
     renderTray();
   }
 
+  // Allow other modules (e.g. the /compare/ builder) to keep the tray in sync
+  // after they mutate the shared localStorage list.
+  window.addEventListener('ng:compare:change', renderTray);
+
   document.addEventListener('DOMContentLoaded', function () {
     renderTray();
 

@@ -63,6 +63,21 @@ add_action( 'wp_enqueue_scripts', function () {
         true
     );
 
+    // Compare builder (only on /compare/) — pickers + catalog for the two-slot builder
+    if ( is_page( 'compare' ) ) {
+        wp_enqueue_script(
+            'ng-compare-builder',
+            get_template_directory_uri() . '/assets/js/compare-builder.js',
+            array( 'ng-compare' ),
+            NGT_VERSION,
+            true
+        );
+        wp_localize_script( 'ng-compare-builder', 'ngCompareBuilder', [
+            'catalog'     => ngt_compare_catalog(),
+            'compareBase' => home_url( '/compare/' ),
+        ] );
+    }
+
     // Auth modal (all pages)
     wp_enqueue_script( 'ng-auth', NGT_URI . '/assets/js/auth.js', [ 'supabase-js' ], NGT_VERSION, true );
 
@@ -215,6 +230,61 @@ function ngt_variant_price_display( array $variant, array $price_rows = [] ): ar
         'source_url'  => '',
         'source_name' => '',
     ];
+}
+
+/**
+ * Build the compare-builder catalog: one entry per available model, resolved to its
+ * cheapest available variant. Used by the /compare/ builder pickers (client-side filtering).
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function ngt_compare_catalog(): array {
+    $rows = ngt_supabase_get(
+        'variants',
+        [
+            'select'             => 'slug,name,thumbnail_url,image_url,starting_price_npr,models!inner(slug,name,body_type,is_ev,brands!inner(name,slug))',
+            'is_available_nepal' => 'eq.true',
+            'order'              => 'starting_price_npr.asc.nullslast',
+            'limit'              => '500',
+        ],
+        15 * MINUTE_IN_SECONDS
+    );
+
+    $by_model = [];
+    foreach ( $rows as $row ) {
+        $model = $row['models'] ?? [];
+        $brand = $model['brands'] ?? [];
+        $model_slug = sanitize_title( (string) ( $model['slug'] ?? '' ) );
+        if ( '' === $model_slug || isset( $by_model[ $model_slug ] ) ) {
+            continue; // first occurrence is cheapest thanks to the ordering above.
+        }
+
+        $price = isset( $row['starting_price_npr'] ) && '' !== $row['starting_price_npr']
+            ? (int) $row['starting_price_npr']
+            : null;
+
+        $by_model[ $model_slug ] = [
+            'variant_slug' => sanitize_title( (string) ( $row['slug'] ?? '' ) ),
+            'model_slug'   => $model_slug,
+            'model_name'   => (string) ( $model['name'] ?? '' ),
+            'brand_name'   => (string) ( $brand['name'] ?? '' ),
+            'brand_slug'   => sanitize_title( (string) ( $brand['slug'] ?? '' ) ),
+            'body_type'    => (string) ( $model['body_type'] ?? '' ),
+            'is_ev'        => ! empty( $model['is_ev'] ),
+            'price'        => $price,
+            'thumb'        => (string) ( $row['thumbnail_url'] ?? $row['image_url'] ?? '' ),
+        ];
+    }
+
+    $catalog = array_values( $by_model );
+    usort(
+        $catalog,
+        static function ( $a, $b ) {
+            return strcasecmp( $a['brand_name'] . ' ' . $a['model_name'], $b['brand_name'] . ' ' . $b['model_name'] );
+        }
+    );
+
+    return $catalog;
 }
 
 /**

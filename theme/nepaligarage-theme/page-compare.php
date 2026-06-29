@@ -16,7 +16,7 @@ if ( $cmp_a && $cmp_b ) {
         <div class="ng-container ng-container--wide">
           <h1 class="ng-compare-hub__title">Vehicle Comparison</h1>
           <?php echo do_shortcode( '[ng_compare variant_ids="' . esc_attr( $cmp_a . ',' . $cmp_b ) . '"]' ); ?>
-          <p class="ng-compare-hub__back"><a href="/compare/" class="ng-link">← Back to Compare</a></p>
+          <p class="ng-compare-hub__back"><a href="/compare/" class="ng-btn ng-btn--outline ng-btn--sm">← Pick different cars</a></p>
         </div>
       </section>
     </main>
@@ -55,8 +55,8 @@ $hero_copy  = 'Research side-by-side pricing, specifications, known issues, and 
                     <p class="ng-compare-hub-hero__copy"><?php echo esc_html( $hero_copy ); ?></p>
 
                     <div class="ng-compare-hub-hero__actions">
-                        <a href="#ng-compare-library" class="ng-btn ng-btn--red ng-btn--lg">Browse Comparisons</a>
-                        <a href="<?php echo esc_url( home_url( '/new-cars/' ) ); ?>" class="ng-btn ng-btn--outline-white ng-btn--lg">Research Vehicles</a>
+                        <a href="#ng-compare-builder-section" class="ng-btn ng-btn--red ng-btn--lg">Build a comparison</a>
+                        <a href="#ng-compare-library" class="ng-btn ng-btn--outline-white ng-btn--lg">Browse editor’s picks</a>
                     </div>
 
                     <div class="ng-compare-hub-hero__chips" aria-label="Platform highlights">
@@ -92,6 +92,22 @@ $hero_copy  = 'Research side-by-side pricing, specifications, known issues, and 
                         <p class="ng-compare-hub-note__body">Every comparison is designed to answer the real buyer question: which vehicle fits your budget, use case, and compromise profile better in Nepal?</p>
                     </div>
                 </aside>
+            </div>
+        </div>
+    </section>
+
+    <section class="ng-compare-hub-builder" id="ng-compare-builder-section">
+        <div class="ng-container ng-container--wide">
+            <div class="ng-compare-hub-section-head">
+                <span class="ng-compare-hub-section-head__eyebrow">Build your comparison</span>
+                <h2>Pick any two cars and compare them side by side</h2>
+                <p>Choose Car A and Car B by brand, body type, or name. Add cars from any vehicle page too — your shortlist follows you around the site.</p>
+            </div>
+
+            <div class="ng-cbuilder" id="ng-compare-builder" aria-live="polite">
+                <noscript>
+                    <p class="ng-cbuilder__empty">Enable JavaScript to build a comparison, or browse the editor’s comparisons below.</p>
+                </noscript>
             </div>
         </div>
     </section>
